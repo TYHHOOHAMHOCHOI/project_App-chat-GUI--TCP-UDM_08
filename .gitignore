@@ -1,0 +1,25 @@
+# Visual Studio / .NET build output
+bin/
+obj/
+.vs/
+
+# User-specific IDE files
+*.user
+*.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+# Build and publish artifacts
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Pp]ublish/
+artifacts/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+TestResults/
