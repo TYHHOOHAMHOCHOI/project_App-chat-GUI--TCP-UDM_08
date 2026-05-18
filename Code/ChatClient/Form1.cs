@@ -178,4 +178,9 @@ public partial class Form1 : Form
             // TODO: send image bytes to server
         }
     }
+
+    private void txtUsername_TextChanged(object sender, EventArgs e)
+    {
+
+    }
 }
