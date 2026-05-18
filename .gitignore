@@ -23,3 +23,4 @@ artifacts/
 *.tmp
 *.temp
 TestResults/
+/Code/ChatServer/ChatServer.csproj
