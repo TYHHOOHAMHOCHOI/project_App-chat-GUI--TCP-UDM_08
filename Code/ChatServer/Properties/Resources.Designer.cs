@@ -63,10 +63,50 @@ namespace ChatServer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Gemini_Generated_Image_iztcv8iztcv8iztc {
+            get {
+                object obj = ResourceManager.GetObject("Gemini_Generated_Image_iztcv8iztcv8iztc", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap pngtree_3d_user_icon_on_blue_circle_isolated_transparent_background_white_png_image_16477931 {
             get {
                 object obj = ResourceManager.GetObject("pngtree-3d-user-icon-on-blue-circle-isolated-transparent-background-white-png-ima" +
                         "ge_16477931", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Screenshot_2026_05_19_194645 {
+            get {
+                object obj = ResourceManager.GetObject("Screenshot 2026-05-19 194645", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Screenshot_2026_05_19_194955 {
+            get {
+                object obj = ResourceManager.GetObject("Screenshot 2026-05-19 194955", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Screenshot_2026_05_19_195051 {
+            get {
+                object obj = ResourceManager.GetObject("Screenshot 2026-05-19 195051", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

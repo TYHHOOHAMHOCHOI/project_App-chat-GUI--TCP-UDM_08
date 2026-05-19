@@ -46,7 +46,17 @@ partial class Form1
         btnSend = new Button();
         pictureBox1 = new PictureBox();
         label2 = new Label();
+        dgvClients = new DataGridView();
+        lblSoClient = new Label();
+        btnLogout = new Button();
+        colID = new DataGridViewTextBoxColumn();
+        colName = new DataGridViewTextBoxColumn();
+        colKick = new DataGridViewButtonColumn();
+        colSend = new DataGridViewButtonColumn();
+        button1 = new Button();
+        button2 = new Button();
         ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)dgvClients).BeginInit();
         SuspendLayout();
         // 
         // btnOpenServer
@@ -179,12 +189,13 @@ partial class Form1
         // 
         // btnSend
         // 
-        btnSend.Location = new Point(523, 564);
+        btnSend.Location = new Point(12, 618);
         btnSend.Name = "btnSend";
         btnSend.Size = new Size(101, 34);
         btnSend.TabIndex = 14;
         btnSend.Text = "Gửi";
         btnSend.UseVisualStyleBackColor = true;
+        btnSend.Click += btnSend_Click;
         // 
         // pictureBox1
         // 
@@ -204,12 +215,98 @@ partial class Form1
         label2.Size = new Size(0, 20);
         label2.TabIndex = 16;
         // 
+        // dgvClients
+        // 
+        dgvClients.AllowUserToAddRows = false;
+        dgvClients.BackgroundColor = SystemColors.ButtonHighlight;
+        dgvClients.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        dgvClients.Columns.AddRange(new DataGridViewColumn[] { colID, colName, colKick, colSend });
+        dgvClients.Location = new Point(654, 28);
+        dgvClients.Name = "dgvClients";
+        dgvClients.RowHeadersVisible = false;
+        dgvClients.RowHeadersWidth = 51;
+        dgvClients.Size = new Size(293, 533);
+        dgvClients.TabIndex = 17;
+        // 
+        // lblSoClient
+        // 
+        lblSoClient.AutoSize = true;
+        lblSoClient.Location = new Point(664, 564);
+        lblSoClient.Name = "lblSoClient";
+        lblSoClient.Size = new Size(81, 20);
+        lblSoClient.TabIndex = 18;
+        lblSoClient.Text = "Số client: 0";
+        lblSoClient.Click += lblSoClient_Click;
+        // 
+        // btnLogout
+        // 
+        btnLogout.Location = new Point(853, 615);
+        btnLogout.Name = "btnLogout";
+        btnLogout.Size = new Size(94, 37);
+        btnLogout.TabIndex = 19;
+        btnLogout.Text = "Đăng xuất";
+        btnLogout.UseVisualStyleBackColor = true;
+        // 
+        // colID
+        // 
+        colID.HeaderText = "ID";
+        colID.MinimumWidth = 6;
+        colID.Name = "colID";
+        colID.Width = 40;
+        // 
+        // colName
+        // 
+        colName.HeaderText = "Name";
+        colName.MinimumWidth = 6;
+        colName.Name = "colName";
+        colName.Width = 60;
+        // 
+        // colKick
+        // 
+        colKick.HeaderText = "Disconnect";
+        colKick.MinimumWidth = 6;
+        colKick.Name = "colKick";
+        colKick.Text = "Kick";
+        colKick.UseColumnTextForButtonValue = true;
+        colKick.Width = 90;
+        // 
+        // colSend
+        // 
+        colSend.HeaderText = "Gửi tin nhắn";
+        colSend.MinimumWidth = 6;
+        colSend.Name = "colSend";
+        colSend.Text = "Gửi";
+        colSend.UseColumnTextForButtonValue = true;
+        // 
+        // button1
+        // 
+        button1.Image = Properties.Resources.Screenshot_2026_05_19_194645;
+        button1.Location = new Point(441, 558);
+        button1.Name = "button1";
+        button1.Size = new Size(76, 40);
+        button1.TabIndex = 20;
+        button1.UseVisualStyleBackColor = true;
+        // 
+        // button2
+        // 
+        button2.Image = Properties.Resources.Screenshot_2026_05_19_195051;
+        button2.Location = new Point(536, 558);
+        button2.Name = "button2";
+        button2.Size = new Size(76, 40);
+        button2.TabIndex = 21;
+        button2.UseVisualStyleBackColor = true;
+        // 
         // Form1
         // 
         AutoScaleDimensions = new SizeF(8F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = SystemColors.InactiveCaption;
-        ClientSize = new Size(982, 603);
+        ClientSize = new Size(950, 664);
+        Controls.Add(button2);
+        Controls.Add(button1);
+        Controls.Add(btnLogout);
+        Controls.Add(lblSoClient);
+        Controls.Add(dgvClients);
         Controls.Add(label2);
         Controls.Add(pictureBox1);
         Controls.Add(btnSend);
@@ -231,6 +328,7 @@ partial class Form1
         Text = "Server";
         Load += Form1_Load;
         ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+        ((System.ComponentModel.ISupportInitialize)dgvClients).EndInit();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -254,4 +352,13 @@ partial class Form1
     private Button btnSend;
     private PictureBox pictureBox1;
     private Label label2;
+    private DataGridView dgvClients;
+    private Label lblSoClient;
+    private Button btnLogout;
+    private DataGridViewTextBoxColumn colID;
+    private DataGridViewTextBoxColumn colName;
+    private DataGridViewButtonColumn colKick;
+    private DataGridViewButtonColumn colSend;
+    private Button button1;
+    private Button button2;
 }

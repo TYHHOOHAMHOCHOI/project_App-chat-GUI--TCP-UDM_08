@@ -26,4 +26,14 @@ public partial class Form1 : Form
     {
 
     }
+
+    private void lblSoClient_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    private void btnSend_Click(object sender, EventArgs e)
+    {
+
+    }
 }
