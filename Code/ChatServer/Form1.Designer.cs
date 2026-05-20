@@ -47,14 +47,13 @@ partial class Form1
         pictureBox1 = new PictureBox();
         label2 = new Label();
         dgvClients = new DataGridView();
-        lblSoClient = new Label();
-        btnLogout = new Button();
         colID = new DataGridViewTextBoxColumn();
         colName = new DataGridViewTextBoxColumn();
         colKick = new DataGridViewButtonColumn();
         colSend = new DataGridViewButtonColumn();
+        lblSoClient = new Label();
         button1 = new Button();
-        button2 = new Button();
+        checkBox1 = new CheckBox();
         ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
         ((System.ComponentModel.ISupportInitialize)dgvClients).BeginInit();
         SuspendLayout();
@@ -68,7 +67,7 @@ partial class Form1
         btnOpenServer.TabIndex = 0;
         btnOpenServer.Text = "Mở kết nối ";
         btnOpenServer.UseVisualStyleBackColor = true;
-        btnOpenServer.Click += button1_Click;
+        btnOpenServer.Click += btnOpenServer_Click;
         // 
         // btnClear
         // 
@@ -156,6 +155,7 @@ partial class Form1
         btnDisconectAll.TabIndex = 10;
         btnDisconectAll.Text = "Ngắt kết nối";
         btnDisconectAll.UseVisualStyleBackColor = true;
+        btnDisconectAll.Click += btnDisconectAll_Click;
         // 
         // rtbLog
         // 
@@ -163,14 +163,14 @@ partial class Form1
         rtbLog.Name = "rtbLog";
         rtbLog.ReadOnly = true;
         rtbLog.ScrollBars = RichTextBoxScrollBars.Vertical;
-        rtbLog.Size = new Size(636, 347);
+        rtbLog.Size = new Size(636, 370);
         rtbLog.TabIndex = 11;
         rtbLog.Text = "";
         // 
         // label1
         // 
         label1.AutoSize = true;
-        label1.Location = new Point(12, 541);
+        label1.Location = new Point(12, 571);
         label1.Name = "label1";
         label1.Size = new Size(102, 20);
         label1.TabIndex = 12;
@@ -180,7 +180,7 @@ partial class Form1
         // 
         txtMessage.AcceptsReturn = true;
         txtMessage.Enabled = false;
-        txtMessage.Location = new Point(12, 564);
+        txtMessage.Location = new Point(12, 598);
         txtMessage.Multiline = true;
         txtMessage.Name = "txtMessage";
         txtMessage.ScrollBars = ScrollBars.Vertical;
@@ -189,7 +189,7 @@ partial class Form1
         // 
         // btnSend
         // 
-        btnSend.Location = new Point(12, 618);
+        btnSend.Location = new Point(481, 598);
         btnSend.Name = "btnSend";
         btnSend.Size = new Size(101, 34);
         btnSend.TabIndex = 14;
@@ -228,25 +228,6 @@ partial class Form1
         dgvClients.Size = new Size(293, 533);
         dgvClients.TabIndex = 17;
         // 
-        // lblSoClient
-        // 
-        lblSoClient.AutoSize = true;
-        lblSoClient.Location = new Point(664, 564);
-        lblSoClient.Name = "lblSoClient";
-        lblSoClient.Size = new Size(81, 20);
-        lblSoClient.TabIndex = 18;
-        lblSoClient.Text = "Số client: 0";
-        lblSoClient.Click += lblSoClient_Click;
-        // 
-        // btnLogout
-        // 
-        btnLogout.Location = new Point(853, 615);
-        btnLogout.Name = "btnLogout";
-        btnLogout.Size = new Size(94, 37);
-        btnLogout.TabIndex = 19;
-        btnLogout.Text = "Đăng xuất";
-        btnLogout.UseVisualStyleBackColor = true;
-        // 
         // colID
         // 
         colID.HeaderText = "ID";
@@ -277,24 +258,42 @@ partial class Form1
         colSend.Name = "colSend";
         colSend.Text = "Gửi";
         colSend.UseColumnTextForButtonValue = true;
+        colSend.Width = 125;
+        // 
+        // lblSoClient
+        // 
+        lblSoClient.AutoSize = true;
+        lblSoClient.Location = new Point(664, 564);
+        lblSoClient.Name = "lblSoClient";
+        lblSoClient.Size = new Size(81, 20);
+        lblSoClient.TabIndex = 18;
+        lblSoClient.Text = "Số client: 0";
+        lblSoClient.Click += lblSoClient_Click;
         // 
         // button1
         // 
-        button1.Image = Properties.Resources.Screenshot_2026_05_19_194645;
-        button1.Location = new Point(441, 558);
+        button1.BackColor = Color.Transparent;
+        button1.FlatAppearance.BorderSize = 0;
+        button1.FlatStyle = FlatStyle.Flat;
+        button1.Font = new Font("Segoe UI Emoji", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        button1.Location = new Point(421, 594);
         button1.Name = "button1";
-        button1.Size = new Size(76, 40);
-        button1.TabIndex = 20;
-        button1.UseVisualStyleBackColor = true;
+        button1.Size = new Size(54, 38);
+        button1.TabIndex = 19;
+        button1.Text = "😀";
+        button1.UseVisualStyleBackColor = false;
+        button1.Paint += btnIcon_Paint;
         // 
-        // button2
+        // checkBox1
         // 
-        button2.Image = Properties.Resources.Screenshot_2026_05_19_195051;
-        button2.Location = new Point(536, 558);
-        button2.Name = "button2";
-        button2.Size = new Size(76, 40);
-        button2.TabIndex = 21;
-        button2.UseVisualStyleBackColor = true;
+        checkBox1.AutoSize = true;
+        checkBox1.Location = new Point(523, 95);
+        checkBox1.Name = "checkBox1";
+        checkBox1.Size = new Size(91, 24);
+        checkBox1.TabIndex = 20;
+        checkBox1.Text = "Hide Key";
+        checkBox1.UseVisualStyleBackColor = true;
+        checkBox1.CheckedChanged += chkHideKey_CheckedChanged;
         // 
         // Form1
         // 
@@ -302,9 +301,8 @@ partial class Form1
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = SystemColors.InactiveCaption;
         ClientSize = new Size(950, 664);
-        Controls.Add(button2);
+        Controls.Add(checkBox1);
         Controls.Add(button1);
-        Controls.Add(btnLogout);
         Controls.Add(lblSoClient);
         Controls.Add(dgvClients);
         Controls.Add(label2);
@@ -334,8 +332,6 @@ partial class Form1
     }
 
     #endregion
-
-    private Button btnOpenServer;
     private Button btnClear;
     private Label lableUsername;
     private Label labelAddress;
@@ -354,11 +350,11 @@ partial class Form1
     private Label label2;
     private DataGridView dgvClients;
     private Label lblSoClient;
-    private Button btnLogout;
     private DataGridViewTextBoxColumn colID;
     private DataGridViewTextBoxColumn colName;
     private DataGridViewButtonColumn colKick;
     private DataGridViewButtonColumn colSend;
     private Button button1;
-    private Button button2;
+    private Button btnOpenServer;
+    private CheckBox checkBox1;
 }
