@@ -104,6 +104,7 @@ partial class Form1
         txtUsername.Name = "txtUsername";
         txtUsername.Size = new Size(191, 27);
         txtUsername.TabIndex = 4;
+        txtUsername.TextChanged += txtUsername_TextChanged;
         // 
         // txtAddress
         // 
@@ -122,6 +123,7 @@ partial class Form1
         labelPort.Size = new Size(38, 20);
         labelPort.TabIndex = 6;
         labelPort.Text = "Port:";
+        labelPort.Click += labelPort_Click;
         // 
         // labelKey
         // 
@@ -138,6 +140,7 @@ partial class Form1
         txtPort.Name = "txtPort";
         txtPort.Size = new Size(125, 27);
         txtPort.TabIndex = 8;
+        txtPort.TextChanged += txtPort_TextChanged;
         // 
         // txtKey
         // 
@@ -145,6 +148,7 @@ partial class Form1
         txtKey.Name = "txtKey";
         txtKey.Size = new Size(125, 27);
         txtKey.TabIndex = 9;
+        txtKey.TextChanged += txtKey_TextChanged;
         // 
         // btnDisconectAll
         // 
@@ -166,6 +170,7 @@ partial class Form1
         rtbLog.Size = new Size(636, 370);
         rtbLog.TabIndex = 11;
         rtbLog.Text = "";
+        rtbLog.TextChanged += rtbLog_TextChanged;
         // 
         // label1
         // 
@@ -179,13 +184,14 @@ partial class Form1
         // txtMessage
         // 
         txtMessage.AcceptsReturn = true;
-        txtMessage.Enabled = false;
         txtMessage.Location = new Point(12, 598);
         txtMessage.Multiline = true;
         txtMessage.Name = "txtMessage";
         txtMessage.ScrollBars = ScrollBars.Vertical;
         txtMessage.Size = new Size(392, 34);
         txtMessage.TabIndex = 13;
+        txtMessage.TextChanged += txtMessage_TextChanged;
+        txtMessage.KeyDown += txtMessage_KeyDown;
         // 
         // btnSend
         // 
@@ -221,12 +227,13 @@ partial class Form1
         dgvClients.BackgroundColor = SystemColors.ButtonHighlight;
         dgvClients.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         dgvClients.Columns.AddRange(new DataGridViewColumn[] { colID, colName, colKick, colSend });
-        dgvClients.Location = new Point(654, 28);
+        dgvClients.Location = new Point(664, 28);
         dgvClients.Name = "dgvClients";
         dgvClients.RowHeadersVisible = false;
         dgvClients.RowHeadersWidth = 51;
         dgvClients.Size = new Size(293, 533);
         dgvClients.TabIndex = 17;
+        dgvClients.CellContentClick += dgvClients_CellContentClick;
         // 
         // colID
         // 
@@ -282,6 +289,7 @@ partial class Form1
         button1.TabIndex = 19;
         button1.Text = "😀";
         button1.UseVisualStyleBackColor = false;
+        button1.Click += button1_Click_1;
         button1.Paint += btnIcon_Paint;
         // 
         // checkBox1
