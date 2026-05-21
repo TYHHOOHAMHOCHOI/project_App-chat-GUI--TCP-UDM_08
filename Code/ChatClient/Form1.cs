@@ -2,25 +2,6 @@ namespace ChatClient;
 
 public partial class Form1 : Form
 {
-    // UI controls
-    private System.Windows.Forms.TextBox txtServerIp;
-    private System.Windows.Forms.Label lblServerIp;
-    private System.Windows.Forms.TextBox txtUsername;
-    private System.Windows.Forms.Label lblUsername;
-    private System.Windows.Forms.TextBox txtPassword;
-    private System.Windows.Forms.Label lblPassword;
-    private System.Windows.Forms.Button btnRegister;
-    private System.Windows.Forms.Button btnLogin;
-    private System.Windows.Forms.ListBox lstUsers;
-    private System.Windows.Forms.RichTextBox rtbChat;
-    private System.Windows.Forms.TextBox txtMessage;
-    private System.Windows.Forms.Button btnSend;
-    private System.Windows.Forms.Button btnSendImage;
-    private System.Windows.Forms.Button btnEmoji;
-    private System.Windows.Forms.Label lblTitle;
-    private System.Windows.Forms.Label lblLoggedIn;
-    // single logout button rendered in chat area
-
     public Form1()
     {
         InitializeComponent();
@@ -28,114 +9,79 @@ public partial class Form1 : Form
 
     private void Form1_Load(object sender, EventArgs e)
     {
-        // Show login dialog on startup
-        using var lf = new LoginForm();
+        using var lf = new Frmlogin();
         var dr = lf.ShowDialog(this);
         if (dr == DialogResult.OK && !string.IsNullOrEmpty(lf.LoggedInUser))
         {
-            txtUsername.Text = lf.LoggedInUser;
-            // hide register/login controls after successful login
-            txtUsername.Visible = false;
-            lblUsername.Visible = false;
-            txtPassword.Visible = false;
-            lblPassword.Visible = false;
-            btnRegister.Visible = false;
-            btnLogin.Visible = false;
-            // show logged-in user
-            if (this.lblLoggedIn != null)
-            {
-                this.lblLoggedIn.Text = $"Logged in: {lf.LoggedInUser}";
-            }
-            // show logout button
-            if (this.btnLogoutChat != null) this.btnLogoutChat.Visible = true;
+            ApplyLoggedInState(lf.LoggedInUser, lf.ServerIp, lf.ServerPort);
         }
         else
         {
-            // If user cancels login, close the app
             Close();
         }
     }
 
-    private void btnRegister_Click(object? sender, EventArgs e)
+    private void ApplyLoggedInState(string username, string serverIp, int serverPort)
     {
-        // open login/register dialog
-        using var lf = new LoginForm();
-        lf.ShowDialog(this);
-    }
+        lblLoggedIn.Text = $"Đã đăng nhập: {username}";
+        label2.Text = serverIp;
+        label3.Text = serverPort.ToString();
+        btnLogoutChat.Visible = true;
 
-    private void btnLogin_Click(object? sender, EventArgs e)
-    {
-        using var lf = new LoginForm();
-        // show centered dialog not owned so it doesn't overlap header
-        var dr = lf.ShowDialog();
-        if (dr == DialogResult.OK && !string.IsNullOrEmpty(lf.LoggedInUser))
-        {
-            txtUsername.Text = lf.LoggedInUser;
-            txtUsername.Visible = false;
-            lblUsername.Visible = false;
-            txtPassword.Visible = false;
-            lblPassword.Visible = false;
-            btnRegister.Visible = false;
-            btnLogin.Visible = false;
-            if (this.lblLoggedIn != null)
-            {
-                this.lblLoggedIn.Text = $"Logged in: {lf.LoggedInUser}";
-            }
-            if (this.btnLogoutChat != null) this.btnLogoutChat.Visible = true;
-        }
+        BeginInvoke(() => txtMessage.Focus());
     }
 
     private void btnLogout_Click(object? sender, EventArgs e)
     {
-        // Show login dialog again. Hide main form while prompting.
-        this.Hide();
-        using var lf = new LoginForm();
+        this.Opacity = 0;
+
+        using var lf = new Frmlogin();
         lf.StartPosition = FormStartPosition.CenterScreen;
-        lf.TopMost = true;
         var dr = lf.ShowDialog();
         if (dr == DialogResult.OK && !string.IsNullOrEmpty(lf.LoggedInUser))
         {
-            // update UI for new logged in user
-            txtUsername.Text = lf.LoggedInUser;
-            txtUsername.Visible = false;
-            lblUsername.Visible = false;
-            txtPassword.Visible = false;
-            lblPassword.Visible = false;
-            btnRegister.Visible = false;
-            btnLogin.Visible = false;
-            if (this.lblLoggedIn != null) this.lblLoggedIn.Text = $"Logged in: {lf.LoggedInUser}";
-            if (this.btnLogoutChat != null) this.btnLogoutChat.Visible = true;
-            this.Show();
+            ApplyLoggedInState(lf.LoggedInUser, lf.ServerIp, lf.ServerPort);
+            this.Opacity = 1;
         }
         else
         {
-            // user cancelled -> exit
             Close();
         }
     }
 
-    private void lstUsers_SelectedIndexChanged(object? sender, EventArgs e)
+    // Helper: cuộn xuống cuối rtbChat
+    private void ScrollToBottom()
     {
-        // Optionally select user to chat privately
+        rtbChat.SelectionStart = rtbChat.TextLength;
+        rtbChat.SelectionLength = 0;
+        rtbChat.ScrollToCaret();
     }
+
+    private void lstUsers_SelectedIndexChanged(object? sender, EventArgs e) { }
 
     private void btnSend_Click(object? sender, EventArgs e)
     {
         var text = txtMessage.Text.Trim();
         if (string.IsNullOrEmpty(text)) return;
-        var user = txtUsername.Visible ? txtUsername.Text : (lblLoggedIn != null ? lblLoggedIn.Text.Replace("Logged in: ", "") : "Me");
+
+        var user = lblLoggedIn.Text.Replace("Đã đăng nhập: ", "");
         var ts = DateTime.Now.ToString("HH:mm");
-        rtbChat.SelectionColor = System.Drawing.Color.DarkBlue;
+
+        rtbChat.SelectionColor = Color.Yellow;
+        rtbChat.SelectionFont = new Font(rtbChat.Font, FontStyle.Bold);
         rtbChat.AppendText($"[{ts}] {user}: ");
-        rtbChat.SelectionColor = System.Drawing.Color.Black;
+
+        rtbChat.SelectionColor = Color.White;
+        rtbChat.SelectionFont = new Font(rtbChat.Font, FontStyle.Regular);
         rtbChat.AppendText(text + Environment.NewLine);
+
+        ScrollToBottom();
         txtMessage.Clear();
-        // TODO: send message to server
+        // TODO: gửi tin nhắn lên server → label2.Text (IP) : label3.Text (Port)
     }
 
     private void btnEmoji_Click(object? sender, EventArgs e)
     {
-        // Simple emoji menu
         var menu = new ContextMenuStrip();
         var emojis = new[] {
             "😀","😁","😂","🤣","😃","😄","😅","😆","😉","😊",
@@ -172,10 +118,45 @@ public partial class Form1 : Form
     {
         using var ofd = new OpenFileDialog();
         ofd.Filter = "Image Files|*.bmp;*.jpg;*.jpeg;*.png;*.gif";
-        if (ofd.ShowDialog() == DialogResult.OK)
+        if (ofd.ShowDialog() != DialogResult.OK) return;
+
+        try
         {
-            rtbChat.AppendText($"[Image sent: {Path.GetFileName(ofd.FileName)}]{Environment.NewLine}");
-            // TODO: send image bytes to server
+            var user = lblLoggedIn.Text.Replace("Đã đăng nhập: ", "");
+            var ts = DateTime.Now.ToString("HH:mm");
+
+            rtbChat.SelectionColor = Color.Yellow;
+            rtbChat.SelectionFont = new Font(rtbChat.Font, FontStyle.Bold);
+            rtbChat.AppendText($"[{ts}] {user}:{Environment.NewLine}");
+
+            rtbChat.SelectionColor = Color.White;
+            rtbChat.SelectionFont = new Font(rtbChat.Font, FontStyle.Regular);
+
+            using var original = Image.FromFile(ofd.FileName);
+            int maxW = Math.Min(200, rtbChat.ClientSize.Width - 20);
+            float ratio = Math.Min(1f, (float)maxW / original.Width);
+            int dispW = (int)(original.Width * ratio);
+            int dispH = (int)(original.Height * ratio);
+
+            using var scaled = new Bitmap(original, dispW, dispH);
+            Clipboard.SetImage(scaled);
+
+            rtbChat.ReadOnly = false;
+            rtbChat.Select(rtbChat.TextLength, 0);
+            rtbChat.Paste();
+            rtbChat.ReadOnly = true;
+
+            rtbChat.AppendText(Environment.NewLine);
+
+            ScrollToBottom();
+            txtMessage.Focus();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Không thể hiển thị ảnh: {ex.Message}", "Lỗi",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
+
+    private void label1_Click(object sender, EventArgs e) { }
 }

@@ -2,15 +2,8 @@
 
 partial class Form1
 {
-    /// <summary>
-    ///  Required designer variable.
-    /// </summary>
     private System.ComponentModel.IContainer components = null;
 
-    /// <summary>
-    ///  Clean up any resources being used.
-    /// </summary>
-    /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
     protected override void Dispose(bool disposing)
     {
         if (disposing && (components != null))
@@ -22,294 +15,290 @@ partial class Form1
 
     #region Windows Form Designer generated code
 
-    /// <summary>
-    ///  Required method for Designer support - do not modify
-    ///  the contents of this method with the code editor.
-    /// </summary>
     private void InitializeComponent()
     {
-        this.txtServerIp = new System.Windows.Forms.TextBox();
-        this.lblServerIp = new System.Windows.Forms.Label();
-        this.txtUsername = new System.Windows.Forms.TextBox();
-        this.lblUsername = new System.Windows.Forms.Label();
-        this.txtPassword = new System.Windows.Forms.TextBox();
-        this.lblPassword = new System.Windows.Forms.Label();
-        this.btnRegister = new System.Windows.Forms.Button();
-        this.btnLogin = new System.Windows.Forms.Button();
-        this.lstUsers = new System.Windows.Forms.ListBox();
-        this.rtbChat = new System.Windows.Forms.RichTextBox();
-        this.txtMessage = new System.Windows.Forms.TextBox();
-        this.btnSend = new System.Windows.Forms.Button();
-        this.btnSendImage = new System.Windows.Forms.Button();
-        this.SuspendLayout();
-        // 
-        // lblServerIp
-        // 
-        this.lblServerIp.AutoSize = true;
-        this.lblServerIp.Location = new System.Drawing.Point(520, 60);
-        this.lblServerIp.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-        this.lblServerIp.Name = "lblServerIp";
-        this.lblServerIp.Size = new System.Drawing.Size(70, 20);
-        this.lblServerIp.TabIndex = 0;
-        this.lblServerIp.Text = "IP Server:";
-        // 
-        // txtServerIp
-        // 
-        this.txtServerIp.Location = new System.Drawing.Point(590, 57);
-        this.txtServerIp.Name = "txtServerIp";
-        this.txtServerIp.Size = new System.Drawing.Size(180, 27);
-        this.txtServerIp.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-        this.txtServerIp.TabIndex = 1;
-        this.txtServerIp.Text = "127.0.0.1";
-        // 
-        // lblUsername
-        // 
-        this.lblUsername.AutoSize = true;
-        this.lblUsername.Location = new System.Drawing.Point(12, 90);
-        this.lblUsername.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
-        this.lblUsername.Name = "lblUsername";
-        this.lblUsername.Size = new System.Drawing.Size(77, 20);
-        this.lblUsername.TabIndex = 2;
-        this.lblUsername.Text = "Username:";
-        // 
-        // txtUsername
-        // 
-        this.txtUsername.Location = new System.Drawing.Point(90, 87);
-        this.txtUsername.Name = "txtUsername";
-        this.txtUsername.Size = new System.Drawing.Size(180, 27);
-        this.txtUsername.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
-        this.txtUsername.TabIndex = 3;
-        // 
-        // lblPassword
-        // 
-        this.lblPassword.AutoSize = true;
-        this.lblPassword.Location = new System.Drawing.Point(12, 125);
-        this.lblPassword.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
-        this.lblPassword.Name = "lblPassword";
-        this.lblPassword.Size = new System.Drawing.Size(73, 20);
-        this.lblPassword.TabIndex = 4;
-        this.lblPassword.Text = "Password:";
-        // 
-        // txtPassword
-        // 
-        this.txtPassword.Location = new System.Drawing.Point(90, 122);
-        this.txtPassword.Name = "txtPassword";
-        this.txtPassword.Size = new System.Drawing.Size(180, 27);
-        this.txtPassword.TabIndex = 5;
-        this.txtPassword.UseSystemPasswordChar = true;
-        this.txtPassword.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
-        this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-        // 
-        // btnRegister
-        // 
-        this.btnRegister.Location = new System.Drawing.Point(290, 52);
-        this.btnRegister.Name = "btnRegister";
-        this.btnRegister.Size = new System.Drawing.Size(90, 30);
-        this.btnRegister.TabIndex = 6;
-        this.btnRegister.Text = "Đăng ký";
-        this.btnRegister.UseVisualStyleBackColor = true;
-        this.btnRegister.Click += new System.EventHandler(this.btnRegister_Click);
-        this.btnRegister.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
-        this.btnRegister.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-        // 
-        // btnLogin
-        // 
-        this.btnLogin.Location = new System.Drawing.Point(290, 92);
-        this.btnLogin.Name = "btnLogin";
-        this.btnLogin.Size = new System.Drawing.Size(90, 30);
-        this.btnLogin.TabIndex = 7;
-        this.btnLogin.Text = "Đăng nhập";
-        this.btnLogin.UseVisualStyleBackColor = true;
-        this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
-        this.btnLogin.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
-        this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+        lstUsers = new ListBox();
+        rtbChat = new RichTextBox();
+        txtMessage = new TextBox();
+        btnSend = new Button();
+        btnSendImage = new Button();
+        btnEmoji = new Button();
+        headerPanel = new Panel();
+        lblTitle = new Label();
+        headerRightPanel = new FlowLayoutPanel();
+        lblLoggedIn = new Label();
+        lblServerIp = new Label();
+        label2 = new Label();
+        label1 = new Label();
+        label3 = new Label();
+        panel1 = new Panel();
+        btnLogoutChat = new Button();
+        headerPanel.SuspendLayout();
+        headerRightPanel.SuspendLayout();
+        panel1.SuspendLayout();
+        SuspendLayout();
         // 
         // lstUsers
         // 
-        this.lstUsers.FormattingEnabled = true;
-        this.lstUsers.ItemHeight = 20;
-        // position the user list aligned with the top of the chat area
-        this.lstUsers.Location = new System.Drawing.Point(400, 170);
-        this.lstUsers.Name = "lstUsers";
-        // match height to the chat area for a horizontal alignment
-        this.lstUsers.Size = new System.Drawing.Size(188, 270);
-        this.lstUsers.TabIndex = 8;
-        this.lstUsers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Right));
-        this.lstUsers.SelectedIndexChanged += new System.EventHandler(this.lstUsers_SelectedIndexChanged);
-        this.lstUsers.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+        lstUsers.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+        lstUsers.BackColor = Color.FromArgb(64, 64, 64);
+        lstUsers.Font = new Font("Segoe UI", 9F);
+        lstUsers.ForeColor = SystemColors.Window;
+        lstUsers.FormattingEnabled = true;
+        lstUsers.Location = new Point(1047, 90);
+        lstUsers.Margin = new Padding(4);
+        lstUsers.Name = "lstUsers";
+        lstUsers.Size = new Size(243, 548);
+        lstUsers.TabIndex = 0;
+        lstUsers.SelectedIndexChanged += lstUsers_SelectedIndexChanged;
         // 
         // rtbChat
         // 
-        this.rtbChat.Location = new System.Drawing.Point(12, 170);
-        this.rtbChat.Name = "rtbChat";
-        this.rtbChat.ReadOnly = true;
-        this.rtbChat.Size = new System.Drawing.Size(372, 270);
-        this.rtbChat.TabIndex = 9;
-        this.rtbChat.Text = "";
-        this.rtbChat.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-        this.rtbChat.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-        this.rtbChat.BackColor = System.Drawing.Color.WhiteSmoke;
+        rtbChat.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        rtbChat.BackColor = Color.FromArgb(64, 64, 64);
+        rtbChat.Font = new Font("Segoe UI", 10F);
+        rtbChat.ForeColor = SystemColors.Window;
+        rtbChat.Location = new Point(16, 90);
+        rtbChat.Margin = new Padding(4);
+        rtbChat.Name = "rtbChat";
+        rtbChat.ReadOnly = true;
+        rtbChat.Size = new Size(1009, 588);
+        rtbChat.TabIndex = 1;
+        rtbChat.Text = "";
         // 
         // txtMessage
         // 
-        this.txtMessage.Location = new System.Drawing.Point(12, 448);
-        this.txtMessage.Name = "txtMessage";
-        this.txtMessage.Size = new System.Drawing.Size(220, 27);
-        this.txtMessage.TabIndex = 10;
-        this.txtMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-        this.txtMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+        txtMessage.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        txtMessage.BackColor = Color.FromArgb(64, 64, 64);
+        txtMessage.Font = new Font("Segoe UI", 9F);
+        txtMessage.ForeColor = SystemColors.Window;
+        txtMessage.Location = new Point(16, 692);
+        txtMessage.Margin = new Padding(4);
+        txtMessage.Name = "txtMessage";
+        txtMessage.Size = new Size(744, 39);
+        txtMessage.TabIndex = 2;
         // 
         // btnSend
         // 
-        this.btnSend.Location = new System.Drawing.Point(280, 446);
-        this.btnSend.Name = "btnSend";
-        this.btnSend.Size = new System.Drawing.Size(84, 30);
-        this.btnSend.TabIndex = 11;
-        this.btnSend.Text = "Gửi";
-        this.btnSend.UseVisualStyleBackColor = true;
-        this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
-        this.btnSend.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-        this.btnSend.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+        btnSend.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+        btnSend.BackColor = Color.FromArgb(64, 64, 64);
+        btnSend.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        btnSend.ForeColor = SystemColors.ControlLightLight;
+        btnSend.Location = new Point(821, 689);
+        btnSend.Margin = new Padding(4);
+        btnSend.Name = "btnSend";
+        btnSend.Size = new Size(109, 38);
+        btnSend.TabIndex = 4;
+        btnSend.Text = "Gửi";
+        btnSend.UseVisualStyleBackColor = false;
+        btnSend.Click += btnSend_Click;
         // 
         // btnSendImage
         // 
-        this.btnSendImage.Location = new System.Drawing.Point(400, 446);
-        this.btnSendImage.Name = "btnSendImage";
-        this.btnSendImage.Size = new System.Drawing.Size(120, 30);
-        this.btnSendImage.TabIndex = 12;
-        this.btnSendImage.Text = "Gửi ảnh";
-        this.btnSendImage.UseVisualStyleBackColor = true;
-        this.btnSendImage.Click += new System.EventHandler(this.btnSendImage_Click);
-        this.btnSendImage.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-        this.btnSendImage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+        btnSendImage.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+        btnSendImage.BackColor = Color.FromArgb(64, 64, 64);
+        btnSendImage.Font = new Font("Segoe UI", 9F);
+        btnSendImage.ForeColor = SystemColors.Window;
+        btnSendImage.Location = new Point(938, 689);
+        btnSendImage.Margin = new Padding(4);
+        btnSendImage.Name = "btnSendImage";
+        btnSendImage.Size = new Size(117, 38);
+        btnSendImage.TabIndex = 5;
+        btnSendImage.Text = "Gửi ảnh";
+        btnSendImage.UseVisualStyleBackColor = false;
+        btnSendImage.Click += btnSendImage_Click;
         // 
         // btnEmoji
         // 
-        this.btnEmoji = new System.Windows.Forms.Button();
-        this.btnEmoji.Location = new System.Drawing.Point(360, 446);
-        this.btnEmoji.Name = "btnEmoji";
-        this.btnEmoji.Size = new System.Drawing.Size(34, 30);
-        this.btnEmoji.TabIndex = 13;
-        this.btnEmoji.Text = "😊";
-        this.btnEmoji.UseVisualStyleBackColor = true;
-        this.btnEmoji.Click += new System.EventHandler(this.btnEmoji_Click);
-        this.btnEmoji.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-        this.btnEmoji.Font = new System.Drawing.Font("Segoe UI Emoji", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-        // 
-        // Form1
-        // 
-        this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
-        this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(800, 600);
-        this.MinimumSize = new System.Drawing.Size(720, 520);
-        this.BackColor = System.Drawing.Color.FromArgb(245, 245, 248);
-        this.Controls.Add(this.btnSendImage);
-        this.Controls.Add(this.btnSend);
-        this.Controls.Add(this.btnEmoji);
-        this.Controls.Add(this.txtMessage);
-        this.Controls.Add(this.rtbChat);
-        this.Controls.Add(this.lstUsers);
-        this.Controls.Add(this.btnLogin);
-        this.Controls.Add(this.btnRegister);
-        this.Controls.Add(this.txtPassword);
-        this.Controls.Add(this.lblPassword);
-        this.Controls.Add(this.txtUsername);
-        this.Controls.Add(this.lblUsername);
-        // IP controls are added into headerRightPanel instead of directly to form
-        // header
-        this.lblTitle = new System.Windows.Forms.Label();
-        this.lblLoggedIn = new System.Windows.Forms.Label();
+        btnEmoji.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+        btnEmoji.BackColor = Color.FromArgb(64, 64, 64);
+        btnEmoji.Font = new Font("Segoe UI Emoji", 10F);
+        btnEmoji.ForeColor = SystemColors.Window;
+        btnEmoji.Location = new Point(769, 689);
+        btnEmoji.Margin = new Padding(4);
+        btnEmoji.Name = "btnEmoji";
+        btnEmoji.Size = new Size(44, 38);
+        btnEmoji.TabIndex = 3;
+        btnEmoji.Text = "😊";
+        btnEmoji.UseVisualStyleBackColor = false;
+        btnEmoji.Click += btnEmoji_Click;
         // 
         // headerPanel
         // 
-        this.headerPanel = new System.Windows.Forms.Panel();
-        this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
-        this.headerPanel.Height = 56;
-        this.headerPanel.BackColor = System.Drawing.Color.FromArgb(250, 250, 252);
-        this.headerPanel.Padding = new System.Windows.Forms.Padding(10, 8, 10, 8);
+        headerPanel.BackColor = Color.FromArgb(128, 128, 255);
+        headerPanel.Controls.Add(lblTitle);
+        headerPanel.Controls.Add(headerRightPanel);
+        headerPanel.Controls.Add(panel1);
+        headerPanel.Dock = DockStyle.Top;
+        headerPanel.Location = new Point(0, 0);
+        headerPanel.Margin = new Padding(4);
+        headerPanel.Name = "headerPanel";
+        headerPanel.Padding = new Padding(13, 10, 13, 10);
+        headerPanel.Size = new Size(1307, 129);
+        headerPanel.TabIndex = 6;
         // 
         // lblTitle
         // 
-        this.lblTitle.AutoSize = true;
-        this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-        this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(34, 34, 34);
-        this.lblTitle.Location = new System.Drawing.Point(12, 6);
-        this.lblTitle.Name = "lblTitle";
-        this.lblTitle.Size = new System.Drawing.Size(176, 41);
-        this.lblTitle.TabIndex = 20;
-        this.lblTitle.Text = "Chat App";
+        lblTitle.AutoSize = true;
+        lblTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+        lblTitle.ForeColor = Color.Yellow;
+        lblTitle.Location = new Point(16, 8);
+        lblTitle.Margin = new Padding(4, 0, 4, 0);
+        lblTitle.Name = "lblTitle";
+        lblTitle.Size = new Size(239, 65);
+        lblTitle.TabIndex = 20;
+        lblTitle.Text = "Chat App";
         // 
         // headerRightPanel
         // 
-        this.headerRightPanel = new System.Windows.Forms.FlowLayoutPanel();
-        this.headerRightPanel.FlowDirection = System.Windows.Forms.FlowDirection.LeftToRight;
-        this.headerRightPanel.Dock = System.Windows.Forms.DockStyle.Right;
-        this.headerRightPanel.Width = 380;
-        this.headerRightPanel.WrapContents = false;
-        this.headerRightPanel.Padding = new System.Windows.Forms.Padding(0);
+        headerRightPanel.Controls.Add(lblLoggedIn);
+        headerRightPanel.Controls.Add(lblServerIp);
+        headerRightPanel.Controls.Add(label2);
+        headerRightPanel.Controls.Add(label1);
+        headerRightPanel.Controls.Add(label3);
+        headerRightPanel.Location = new Point(348, 8);
+        headerRightPanel.Margin = new Padding(4);
+        headerRightPanel.Name = "headerRightPanel";
+        headerRightPanel.Size = new Size(794, 109);
+        headerRightPanel.TabIndex = 21;
+        headerRightPanel.WrapContents = false;
         // 
         // lblLoggedIn
         // 
-        this.lblLoggedIn.AutoSize = true;
-        this.lblLoggedIn.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point);
-        this.lblLoggedIn.ForeColor = System.Drawing.Color.FromArgb(90, 90, 90);
-        this.lblLoggedIn.Margin = new System.Windows.Forms.Padding(6, 12, 12, 12);
-        this.lblLoggedIn.Name = "lblLoggedIn";
-        this.lblLoggedIn.Size = new System.Drawing.Size(120, 20);
-        this.lblLoggedIn.TabIndex = 21;
-        this.lblLoggedIn.Text = "Not logged in";
-        this.lblLoggedIn.AutoEllipsis = true;
-        this.lblLoggedIn.MaximumSize = new System.Drawing.Size(220, 0);
+        lblLoggedIn.AutoEllipsis = true;
+        lblLoggedIn.AutoSize = true;
+        lblLoggedIn.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
+        lblLoggedIn.ForeColor = Color.Yellow;
+        lblLoggedIn.Location = new Point(8, 15);
+        lblLoggedIn.Margin = new Padding(8, 15, 16, 15);
+        lblLoggedIn.MaximumSize = new Size(286, 0);
+        lblLoggedIn.Name = "lblLoggedIn";
+        lblLoggedIn.Size = new Size(156, 32);
+        lblLoggedIn.TabIndex = 21;
+        lblLoggedIn.Text = "Not logged in";
         // 
         // lblServerIp
         // 
-        this.lblServerIp.Margin = new System.Windows.Forms.Padding(12, 12, 6, 12);
+        lblServerIp.AutoSize = true;
+        lblServerIp.ForeColor = Color.Yellow;
+        lblServerIp.Location = new Point(196, 15);
+        lblServerIp.Margin = new Padding(16, 15, 8, 15);
+        lblServerIp.Name = "lblServerIp";
+        lblServerIp.Size = new Size(112, 32);
+        lblServerIp.TabIndex = 22;
+        lblServerIp.Text = "IP Server:";
         // 
-        // txtServerIp
+        // label2
         // 
-        this.txtServerIp.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+        label2.AutoEllipsis = true;
+        label2.AutoSize = true;
+        label2.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
+        label2.ForeColor = Color.Yellow;
+        label2.Location = new Point(324, 15);
+        label2.Margin = new Padding(8, 15, 16, 15);
+        label2.MaximumSize = new Size(286, 0);
+        label2.Name = "label2";
+        label2.Size = new Size(44, 32);
+        label2.TabIndex = 22;
+        label2.Text = "---";
         // 
-        // header logout removed; only chat logout button remains
+        // label1
         // 
-        // Add header children
+        label1.AutoSize = true;
+        label1.ForeColor = Color.Yellow;
+        label1.Location = new Point(400, 15);
+        label1.Margin = new Padding(16, 15, 8, 15);
+        label1.Name = "label1";
+        label1.Size = new Size(61, 32);
+        label1.TabIndex = 26;
+        label1.Text = "Port:";
+        label1.Click += label1_Click;
         // 
-        this.headerPanel.Controls.Add(this.lblTitle);
-        this.headerRightPanel.Controls.Add(this.lblLoggedIn);
-        this.headerRightPanel.Controls.Add(this.lblServerIp);
-        this.headerRightPanel.Controls.Add(this.txtServerIp);
-        this.headerPanel.Controls.Add(this.headerRightPanel);
-        this.Controls.Add(this.headerPanel);
-        // make sure header is in front of other controls
-        this.headerPanel.BringToFront();
-        this.headerRightPanel.BringToFront();
+        // label3
+        // 
+        label3.AutoEllipsis = true;
+        label3.AutoSize = true;
+        label3.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
+        label3.ForeColor = Color.Yellow;
+        label3.Location = new Point(477, 15);
+        label3.Margin = new Padding(8, 15, 16, 15);
+        label3.MaximumSize = new Size(286, 0);
+        label3.Name = "label3";
+        label3.Size = new Size(44, 32);
+        label3.TabIndex = 28;
+        label3.Text = "---";
+        // 
+        // panel1
+        // 
+        panel1.Controls.Add(btnLogoutChat);
+        panel1.Dock = DockStyle.Right;
+        panel1.Location = new Point(1149, 10);
+        panel1.Name = "panel1";
+        panel1.Size = new Size(145, 109);
+        panel1.TabIndex = 29;
         // 
         // btnLogoutChat
         // 
-        this.btnLogoutChat = new System.Windows.Forms.Button();
-        this.btnLogoutChat.Text = "Logout";
-        this.btnLogoutChat.AutoSize = true;
-        this.btnLogoutChat.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-        this.btnLogoutChat.Location = new System.Drawing.Point(720, 70);
-        this.btnLogoutChat.Click += new System.EventHandler(this.btnLogout_Click);
-        this.btnLogoutChat.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-        this.btnLogoutChat.Visible = true;
-        this.Controls.Add(this.btnLogoutChat);
-        // header elements are contained in headerPanel/headerRightPanel; no SetChildIndex needed
-        // duplicate btnLogout block removed; btnLogout added to headerRightPanel above
-        this.Name = "Form1";
-        this.Text = "Chat Client";
-        this.Load += new System.EventHandler(this.Form1_Load);
-        this.ResumeLayout(false);
-        this.PerformLayout();
+        btnLogoutChat.AutoSize = true;
+        btnLogoutChat.BackColor = Color.FromArgb(128, 128, 255);
+        btnLogoutChat.Font = new Font("Segoe UI", 9F);
+        btnLogoutChat.ForeColor = Color.White;
+        btnLogoutChat.Location = new Point(12, 12);
+        btnLogoutChat.Margin = new Padding(8, 13, 8, 13);
+        btnLogoutChat.Name = "btnLogoutChat";
+        btnLogoutChat.Size = new Size(129, 54);
+        btnLogoutChat.TabIndex = 24;
+        btnLogoutChat.Text = "Logout";
+        btnLogoutChat.UseVisualStyleBackColor = false;
+        btnLogoutChat.Click += btnLogout_Click;
+        // 
+        // Form1
+        // 
+        AcceptButton = btnSend;
+        AutoScaleDimensions = new SizeF(13F, 32F);
+        AutoScaleMode = AutoScaleMode.Font;
+        BackColor = Color.FromArgb(0, 0, 64);
+        ClientSize = new Size(1307, 756);
+        Controls.Add(btnSendImage);
+        Controls.Add(btnSend);
+        Controls.Add(btnEmoji);
+        Controls.Add(txtMessage);
+        Controls.Add(rtbChat);
+        Controls.Add(lstUsers);
+        Controls.Add(headerPanel);
+        ForeColor = SystemColors.Window;
+        Margin = new Padding(4);
+        MinimumSize = new Size(928, 569);
+        Name = "Form1";
+        Text = "Chat Client";
+        Load += Form1_Load;
+        headerPanel.ResumeLayout(false);
+        headerPanel.PerformLayout();
+        headerRightPanel.ResumeLayout(false);
+        headerRightPanel.PerformLayout();
+        panel1.ResumeLayout(false);
+        panel1.PerformLayout();
+        ResumeLayout(false);
+        PerformLayout();
     }
 
     #endregion
 
-    // Designer fields - only btnLogoutChat should be declared here
+    // Designer fields
+    private System.Windows.Forms.ListBox lstUsers;
+    private System.Windows.Forms.RichTextBox rtbChat;
+    private System.Windows.Forms.TextBox txtMessage;
+    private System.Windows.Forms.Button btnSend;
+    private System.Windows.Forms.Button btnSendImage;
+    private System.Windows.Forms.Button btnEmoji;
     private System.Windows.Forms.Panel headerPanel;
     private System.Windows.Forms.FlowLayoutPanel headerRightPanel;
+    private System.Windows.Forms.Label lblTitle;
+    private System.Windows.Forms.Label lblLoggedIn;
+    private System.Windows.Forms.Label lblServerIp;
     private System.Windows.Forms.Button btnLogoutChat;
+    private Label label1;
+    private Label label2;
+    private Label label3;
+    private Panel panel1;
 }
