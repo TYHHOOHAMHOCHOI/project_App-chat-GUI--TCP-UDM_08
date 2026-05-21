@@ -78,7 +78,6 @@
             // 
             label5.AutoSize = true;
             label5.BackColor = Color.Gainsboro;
-            label5.Cursor = Cursors.Cross;
             label5.Font = new Font("Courier New", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label5.ForeColor = Color.FromArgb(0, 0, 192);
             label5.Location = new Point(314, 446);
@@ -86,6 +85,7 @@
             label5.Size = new Size(138, 27);
             label5.TabIndex = 9;
             label5.Text = "Đăng nhập";
+            label5.Click += label5_Click;
             // 
             // label4
             // 

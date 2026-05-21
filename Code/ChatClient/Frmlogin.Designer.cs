@@ -31,6 +31,8 @@ partial class Frmlogin
         loginlogin = new Button();
         panel1 = new Panel();
         panel3 = new Panel();
+        label2 = new Label();
+        textBox2 = new TextBox();
         textBox1 = new TextBox();
         tpserver = new Label();
         signup = new Label();
@@ -73,6 +75,8 @@ partial class Frmlogin
         // 
         // panel3
         // 
+        panel3.Controls.Add(label2);
+        panel3.Controls.Add(textBox2);
         panel3.Controls.Add(textBox1);
         panel3.Controls.Add(tpserver);
         panel3.Controls.Add(signup);
@@ -89,12 +93,36 @@ partial class Frmlogin
         panel3.Size = new Size(503, 504);
         panel3.TabIndex = 3;
         // 
+        // label2
+        // 
+        label2.AccessibleRole = AccessibleRole.TitleBar;
+        label2.AutoSize = true;
+        label2.BackColor = Color.Gainsboro;
+        label2.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        label2.ForeColor = Color.Blue;
+        label2.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
+        label2.Location = new Point(328, 59);
+        label2.Name = "label2";
+        label2.Size = new Size(91, 36);
+        label2.TabIndex = 10;
+        label2.Text = "Port";
+        label2.Click += label2_Click_1;
+        // 
+        // textBox2
+        // 
+        textBox2.Location = new Point(328, 108);
+        textBox2.Multiline = true;
+        textBox2.Name = "textBox2";
+        textBox2.Size = new Size(141, 43);
+        textBox2.TabIndex = 9;
+        textBox2.TextChanged += textBox2_TextChanged;
+        // 
         // textBox1
         // 
         textBox1.Location = new Point(43, 108);
         textBox1.Multiline = true;
         textBox1.Name = "textBox1";
-        textBox1.Size = new Size(427, 43);
+        textBox1.Size = new Size(271, 43);
         textBox1.TabIndex = 8;
         // 
         // tpserver
@@ -141,6 +169,7 @@ partial class Frmlogin
         loginpassword.Location = new Point(42, 311);
         loginpassword.Multiline = true;
         loginpassword.Name = "loginpassword";
+        loginpassword.PasswordChar = '*';
         loginpassword.Size = new Size(427, 43);
         loginpassword.TabIndex = 4;
         // 
@@ -247,4 +276,6 @@ partial class Frmlogin
     private Label signup;
     private TextBox textBox1;
     private Label tpserver;
+    private Label label2;
+    private TextBox textBox2;
 }
