@@ -36,8 +36,9 @@ public partial class Form1 : Form
 
     private void btnClear_Click(object sender, EventArgs e)
     {
+       
         rtbLog.Clear();
-        rtbLog.AppendText("[Hệ thống] Đã xóa toàn bộ tin nhắn.\r\n");
+        rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Đã xóa toàn bộ tin nhắn.\r\n");
     }
 
     private void lblSoClient_Click(object sender, EventArgs e)
@@ -47,7 +48,16 @@ public partial class Form1 : Form
 
     private void btnSend_Click(object sender, EventArgs e)
     {
-        if (string.IsNullOrEmpty(txtMessage.Text.Trim())) return;
+        if (string.IsNullOrEmpty(txtMessage.Text.Trim()))
+
+        {
+
+            MessageBox.Show("Vui lòng nhập tin nhắn trước khi gửi!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            txtMessage.Focus(); // Đưa con trỏ chuột quay lại ô nhập để người dùng gõ luôn
+            return;
+        } 
+            
+            
 
         if (serverSocket == null || !isRunning)
         {
@@ -57,7 +67,9 @@ public partial class Form1 : Form
 
         // Đọc tên người gửi từ ô Username, nếu trống mặc định là Server
         string senderName = string.IsNullOrEmpty(txtUsername.Text.Trim()) ? "Server" : txtUsername.Text.Trim();
-        string msg = $"{senderName}: {txtMessage.Text}";
+        
+        string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+        string msg = $"[{timeStamp}] {senderName}: {txtMessage.Text}";
 
         rtbLog.AppendText(msg + "\r\n");
 
@@ -100,7 +112,7 @@ public partial class Form1 : Form
             serverSocket.Listen(10);
             isRunning = true;
 
-            rtbLog.AppendText($"[Hệ thống] Server đã mở thành công tại Port: {port}\r\n");
+            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã mở thành công tại Port: {port}\r\n");
             txtMessage.Enabled = true;
 
             btnOpenServer.Enabled = false;
@@ -134,7 +146,7 @@ public partial class Form1 : Form
                 // Đồng bộ hiển thị lên giao diện RichTextBox và DataGridView một cách an toàn
                 this.Invoke((MethodInvoker)delegate
                 {
-                    rtbLog.AppendText($"[Hệ thống] Máy con kết nối từ: {clientSocket.RemoteEndPoint}\r\n");
+                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Máy con kết nối từ: {clientSocket.RemoteEndPoint}\r\n");
                     lblSoClient.Text = $"Số client: {listClientOnline.Count}";
 
                     // Thêm một dòng mới vào bảng DataGridView
@@ -198,7 +210,7 @@ public partial class Form1 : Form
             }
 
 
-            rtbLog.AppendText("[Hệ thống] Server đã ngắt kết nối hoàn toàn.\r\n");
+            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã ngắt kết nối hoàn toàn.\r\n");
             lblSoClient.Text = "Số client: 0";
             txtMessage.Enabled = false;
 
@@ -325,11 +337,12 @@ public partial class Form1 : Form
                     return;
                 }
 
-                string privateMsg = $"[Gửi riêng] Server -> Bạn: {txtMessage.Text}";
+                string timeStampPriv = DateTime.Now.ToString("HH:mm:ss");
+                string privateMsg = $"[{timeStampPriv}] [Gửi riêng] Server -> Bạn: {txtMessage.Text}";
                 byte[] data = Encoding.UTF8.GetBytes(privateMsg);
                 targetClient.Send(data);
 
-                rtbLog.AppendText($"[Gửi riêng] Tới Client {selectedId}: {txtMessage.Text}\r\n");
+                rtbLog.AppendText($"[{timeStampPriv}] [Gửi riêng] Tới Client {selectedId}: {txtMessage.Text}\r\n");
                 txtMessage.Clear();
             }
         }

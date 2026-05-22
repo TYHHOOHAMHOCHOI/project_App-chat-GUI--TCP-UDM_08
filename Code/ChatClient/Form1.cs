@@ -159,4 +159,9 @@ public partial class Form1 : Form
     }
 
     private void label1_Click(object sender, EventArgs e) { }
+
+    private void headerRightPanel_Paint(object sender, PaintEventArgs e)
+    {
+
+    }
 }

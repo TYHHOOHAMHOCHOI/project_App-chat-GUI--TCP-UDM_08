@@ -45,10 +45,10 @@ partial class Form1
         lstUsers.Font = new Font("Segoe UI", 9F);
         lstUsers.ForeColor = SystemColors.Window;
         lstUsers.FormattingEnabled = true;
-        lstUsers.Location = new Point(1047, 90);
-        lstUsers.Margin = new Padding(4);
+        lstUsers.Location = new Point(644, 56);
+        lstUsers.Margin = new Padding(2, 2, 2, 2);
         lstUsers.Name = "lstUsers";
-        lstUsers.Size = new Size(243, 548);
+        lstUsers.Size = new Size(151, 344);
         lstUsers.TabIndex = 0;
         lstUsers.SelectedIndexChanged += lstUsers_SelectedIndexChanged;
         // 
@@ -58,11 +58,11 @@ partial class Form1
         rtbChat.BackColor = Color.FromArgb(64, 64, 64);
         rtbChat.Font = new Font("Segoe UI", 10F);
         rtbChat.ForeColor = SystemColors.Window;
-        rtbChat.Location = new Point(16, 90);
-        rtbChat.Margin = new Padding(4);
+        rtbChat.Location = new Point(10, 56);
+        rtbChat.Margin = new Padding(2, 2, 2, 2);
         rtbChat.Name = "rtbChat";
         rtbChat.ReadOnly = true;
-        rtbChat.Size = new Size(1009, 588);
+        rtbChat.Size = new Size(622, 369);
         rtbChat.TabIndex = 1;
         rtbChat.Text = "";
         // 
@@ -72,10 +72,10 @@ partial class Form1
         txtMessage.BackColor = Color.FromArgb(64, 64, 64);
         txtMessage.Font = new Font("Segoe UI", 9F);
         txtMessage.ForeColor = SystemColors.Window;
-        txtMessage.Location = new Point(16, 692);
-        txtMessage.Margin = new Padding(4);
+        txtMessage.Location = new Point(10, 432);
+        txtMessage.Margin = new Padding(2, 2, 2, 2);
         txtMessage.Name = "txtMessage";
-        txtMessage.Size = new Size(744, 39);
+        txtMessage.Size = new Size(459, 27);
         txtMessage.TabIndex = 2;
         // 
         // btnSend
@@ -84,10 +84,10 @@ partial class Form1
         btnSend.BackColor = Color.FromArgb(64, 64, 64);
         btnSend.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         btnSend.ForeColor = SystemColors.ControlLightLight;
-        btnSend.Location = new Point(821, 689);
-        btnSend.Margin = new Padding(4);
+        btnSend.Location = new Point(505, 431);
+        btnSend.Margin = new Padding(2, 2, 2, 2);
         btnSend.Name = "btnSend";
-        btnSend.Size = new Size(109, 38);
+        btnSend.Size = new Size(67, 24);
         btnSend.TabIndex = 4;
         btnSend.Text = "Gửi";
         btnSend.UseVisualStyleBackColor = false;
@@ -99,10 +99,10 @@ partial class Form1
         btnSendImage.BackColor = Color.FromArgb(64, 64, 64);
         btnSendImage.Font = new Font("Segoe UI", 9F);
         btnSendImage.ForeColor = SystemColors.Window;
-        btnSendImage.Location = new Point(938, 689);
-        btnSendImage.Margin = new Padding(4);
+        btnSendImage.Location = new Point(577, 431);
+        btnSendImage.Margin = new Padding(2, 2, 2, 2);
         btnSendImage.Name = "btnSendImage";
-        btnSendImage.Size = new Size(117, 38);
+        btnSendImage.Size = new Size(72, 24);
         btnSendImage.TabIndex = 5;
         btnSendImage.Text = "Gửi ảnh";
         btnSendImage.UseVisualStyleBackColor = false;
@@ -114,10 +114,10 @@ partial class Form1
         btnEmoji.BackColor = Color.FromArgb(64, 64, 64);
         btnEmoji.Font = new Font("Segoe UI Emoji", 10F);
         btnEmoji.ForeColor = SystemColors.Window;
-        btnEmoji.Location = new Point(769, 689);
-        btnEmoji.Margin = new Padding(4);
+        btnEmoji.Location = new Point(473, 431);
+        btnEmoji.Margin = new Padding(2, 2, 2, 2);
         btnEmoji.Name = "btnEmoji";
-        btnEmoji.Size = new Size(44, 38);
+        btnEmoji.Size = new Size(27, 24);
         btnEmoji.TabIndex = 3;
         btnEmoji.Text = "😊";
         btnEmoji.UseVisualStyleBackColor = false;
@@ -131,10 +131,10 @@ partial class Form1
         headerPanel.Controls.Add(panel1);
         headerPanel.Dock = DockStyle.Top;
         headerPanel.Location = new Point(0, 0);
-        headerPanel.Margin = new Padding(4);
+        headerPanel.Margin = new Padding(2, 2, 2, 2);
         headerPanel.Name = "headerPanel";
-        headerPanel.Padding = new Padding(13, 10, 13, 10);
-        headerPanel.Size = new Size(1307, 129);
+        headerPanel.Padding = new Padding(8, 6, 8, 6);
+        headerPanel.Size = new Size(804, 81);
         headerPanel.TabIndex = 6;
         // 
         // lblTitle
@@ -142,10 +142,10 @@ partial class Form1
         lblTitle.AutoSize = true;
         lblTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
         lblTitle.ForeColor = Color.Yellow;
-        lblTitle.Location = new Point(16, 8);
-        lblTitle.Margin = new Padding(4, 0, 4, 0);
+        lblTitle.Location = new Point(10, 5);
+        lblTitle.Margin = new Padding(2, 0, 2, 0);
         lblTitle.Name = "lblTitle";
-        lblTitle.Size = new Size(239, 65);
+        lblTitle.Size = new Size(150, 41);
         lblTitle.TabIndex = 20;
         lblTitle.Text = "Chat App";
         // 
@@ -156,12 +156,13 @@ partial class Form1
         headerRightPanel.Controls.Add(label2);
         headerRightPanel.Controls.Add(label1);
         headerRightPanel.Controls.Add(label3);
-        headerRightPanel.Location = new Point(348, 8);
-        headerRightPanel.Margin = new Padding(4);
+        headerRightPanel.Location = new Point(214, 5);
+        headerRightPanel.Margin = new Padding(2, 2, 2, 2);
         headerRightPanel.Name = "headerRightPanel";
-        headerRightPanel.Size = new Size(794, 109);
+        headerRightPanel.Size = new Size(489, 68);
         headerRightPanel.TabIndex = 21;
         headerRightPanel.WrapContents = false;
+        headerRightPanel.Paint += headerRightPanel_Paint;
         // 
         // lblLoggedIn
         // 
@@ -169,11 +170,11 @@ partial class Form1
         lblLoggedIn.AutoSize = true;
         lblLoggedIn.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
         lblLoggedIn.ForeColor = Color.Yellow;
-        lblLoggedIn.Location = new Point(8, 15);
-        lblLoggedIn.Margin = new Padding(8, 15, 16, 15);
-        lblLoggedIn.MaximumSize = new Size(286, 0);
+        lblLoggedIn.Location = new Point(5, 9);
+        lblLoggedIn.Margin = new Padding(5, 9, 10, 9);
+        lblLoggedIn.MaximumSize = new Size(176, 0);
         lblLoggedIn.Name = "lblLoggedIn";
-        lblLoggedIn.Size = new Size(156, 32);
+        lblLoggedIn.Size = new Size(96, 20);
         lblLoggedIn.TabIndex = 21;
         lblLoggedIn.Text = "Not logged in";
         // 
@@ -181,10 +182,10 @@ partial class Form1
         // 
         lblServerIp.AutoSize = true;
         lblServerIp.ForeColor = Color.Yellow;
-        lblServerIp.Location = new Point(196, 15);
-        lblServerIp.Margin = new Padding(16, 15, 8, 15);
+        lblServerIp.Location = new Point(121, 9);
+        lblServerIp.Margin = new Padding(10, 9, 5, 9);
         lblServerIp.Name = "lblServerIp";
-        lblServerIp.Size = new Size(112, 32);
+        lblServerIp.Size = new Size(69, 20);
         lblServerIp.TabIndex = 22;
         lblServerIp.Text = "IP Server:";
         // 
@@ -194,11 +195,11 @@ partial class Form1
         label2.AutoSize = true;
         label2.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
         label2.ForeColor = Color.Yellow;
-        label2.Location = new Point(324, 15);
-        label2.Margin = new Padding(8, 15, 16, 15);
-        label2.MaximumSize = new Size(286, 0);
+        label2.Location = new Point(200, 9);
+        label2.Margin = new Padding(5, 9, 10, 9);
+        label2.MaximumSize = new Size(176, 0);
         label2.Name = "label2";
-        label2.Size = new Size(44, 32);
+        label2.Size = new Size(27, 20);
         label2.TabIndex = 22;
         label2.Text = "---";
         // 
@@ -206,10 +207,10 @@ partial class Form1
         // 
         label1.AutoSize = true;
         label1.ForeColor = Color.Yellow;
-        label1.Location = new Point(400, 15);
-        label1.Margin = new Padding(16, 15, 8, 15);
+        label1.Location = new Point(247, 9);
+        label1.Margin = new Padding(10, 9, 5, 9);
         label1.Name = "label1";
-        label1.Size = new Size(61, 32);
+        label1.Size = new Size(38, 20);
         label1.TabIndex = 26;
         label1.Text = "Port:";
         label1.Click += label1_Click;
@@ -220,11 +221,11 @@ partial class Form1
         label3.AutoSize = true;
         label3.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
         label3.ForeColor = Color.Yellow;
-        label3.Location = new Point(477, 15);
-        label3.Margin = new Padding(8, 15, 16, 15);
-        label3.MaximumSize = new Size(286, 0);
+        label3.Location = new Point(295, 9);
+        label3.Margin = new Padding(5, 9, 10, 9);
+        label3.MaximumSize = new Size(176, 0);
         label3.Name = "label3";
-        label3.Size = new Size(44, 32);
+        label3.Size = new Size(27, 20);
         label3.TabIndex = 28;
         label3.Text = "---";
         // 
@@ -232,9 +233,10 @@ partial class Form1
         // 
         panel1.Controls.Add(btnLogoutChat);
         panel1.Dock = DockStyle.Right;
-        panel1.Location = new Point(1149, 10);
+        panel1.Location = new Point(707, 6);
+        panel1.Margin = new Padding(2, 2, 2, 2);
         panel1.Name = "panel1";
-        panel1.Size = new Size(145, 109);
+        panel1.Size = new Size(89, 69);
         panel1.TabIndex = 29;
         // 
         // btnLogoutChat
@@ -243,10 +245,10 @@ partial class Form1
         btnLogoutChat.BackColor = Color.FromArgb(128, 128, 255);
         btnLogoutChat.Font = new Font("Segoe UI", 9F);
         btnLogoutChat.ForeColor = Color.White;
-        btnLogoutChat.Location = new Point(12, 12);
-        btnLogoutChat.Margin = new Padding(8, 13, 8, 13);
+        btnLogoutChat.Location = new Point(7, 8);
+        btnLogoutChat.Margin = new Padding(5, 8, 5, 8);
         btnLogoutChat.Name = "btnLogoutChat";
-        btnLogoutChat.Size = new Size(129, 54);
+        btnLogoutChat.Size = new Size(79, 34);
         btnLogoutChat.TabIndex = 24;
         btnLogoutChat.Text = "Logout";
         btnLogoutChat.UseVisualStyleBackColor = false;
@@ -255,10 +257,10 @@ partial class Form1
         // Form1
         // 
         AcceptButton = btnSend;
-        AutoScaleDimensions = new SizeF(13F, 32F);
+        AutoScaleDimensions = new SizeF(8F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = Color.FromArgb(0, 0, 64);
-        ClientSize = new Size(1307, 756);
+        ClientSize = new Size(804, 472);
         Controls.Add(btnSendImage);
         Controls.Add(btnSend);
         Controls.Add(btnEmoji);
@@ -267,8 +269,8 @@ partial class Form1
         Controls.Add(lstUsers);
         Controls.Add(headerPanel);
         ForeColor = SystemColors.Window;
-        Margin = new Padding(4);
-        MinimumSize = new Size(928, 569);
+        Margin = new Padding(2, 2, 2, 2);
+        MinimumSize = new Size(578, 373);
         Name = "Form1";
         Text = "Chat Client";
         Load += Form1_Load;
