@@ -113,7 +113,7 @@ partial class Form1
         txtAddress.ReadOnly = true;
         txtAddress.Size = new Size(191, 27);
         txtAddress.TabIndex = 5;
-        txtAddress.Text = "127.0.0.1";
+        txtAddress.Text = "0.0.0.0";
         // 
         // labelPort
         // 
@@ -297,9 +297,9 @@ partial class Form1
         checkBox1.AutoSize = true;
         checkBox1.Location = new Point(523, 95);
         checkBox1.Name = "checkBox1";
-        checkBox1.Size = new Size(91, 24);
+        checkBox1.Size = new Size(49, 24);
         checkBox1.TabIndex = 20;
-        checkBox1.Text = "Hide Key";
+        checkBox1.Text = "Ẩn";
         checkBox1.UseVisualStyleBackColor = true;
         checkBox1.CheckedChanged += chkHideKey_CheckedChanged;
         // 
@@ -308,7 +308,7 @@ partial class Form1
         AutoScaleDimensions = new SizeF(8F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = SystemColors.InactiveCaption;
-        ClientSize = new Size(950, 664);
+        ClientSize = new Size(966, 664);
         Controls.Add(checkBox1);
         Controls.Add(button1);
         Controls.Add(lblSoClient);

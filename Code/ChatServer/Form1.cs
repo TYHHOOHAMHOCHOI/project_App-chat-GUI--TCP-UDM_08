@@ -101,31 +101,95 @@ public partial class Form1 : Form
 
     private void btnOpenServer_Click(object sender, EventArgs e)
     {
-        try
+        // TRƯỜNG HỢP 1: dừng
+        if (isRunning)
         {
-            int port = string.IsNullOrEmpty(txtPort.Text) ? 9050 : int.Parse(txtPort.Text);
+            try
+            {
+                // 1. Ngắt vòng lặp ở luồng ngầm
+                isRunning = false;
 
-            txtPort.Text = port.ToString(); // Đưa số port hiển thị lên ô nhập liệu trên giao diện
-            IPEndPoint ipep = new IPEndPoint(IPAddress.Any, port);
-            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            serverSocket.Bind(ipep);
-            serverSocket.Listen(10);
-            isRunning = true;
+                // 2. Đóng Socket chính của Server
+                if (serverSocket != null)
+                {
+                    if (serverSocket.Connected)
+                    {
+                        // Dừng việc nhận và gửi dữ liệu ngay lập tức
+                        serverSocket.Shutdown(SocketShutdown.Both);
+                    }
+                    serverSocket.Close();
+                }
 
-            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã mở thành công tại Port: {port}\r\n");
-            txtMessage.Enabled = true;
+                
+                lock (listClientOnline)
+                {
+                    foreach (Socket clientSocket in listClientOnline)
+                    {
+                        if (clientSocket != null)
+                        {
+                            try
+                            {
+                                if (clientSocket.Connected)
+                                {
+                                    clientSocket.Shutdown(SocketShutdown.Both);
+                                }
+                                clientSocket.Close();
+                            }
+                            catch { }
+                        }
+                    }
+                    listClientOnline.Clear();
+                }
 
-            btnOpenServer.Enabled = false;
-            btnDisconectAll.Enabled = true;
+               
+                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã ngắt kết nối hoàn toàn.\r\n");
+                lblSoClient.Text = "Số client: 0";
 
-            Thread threadListen = new Thread(ListenForClients);
-            // thuộc tính chạy ngầm( khi mà bấm X tắt đi thì sẽ tắt luôn ngầm này nếu ko có thì cái thread chính nó tắt nhưng cái ngầm này nó vẫn chạy -> nặng máy )
-            threadListen.IsBackground = true;
-            threadListen.Start();
+                txtMessage.Enabled = false;
+                btnDisconectAll.Enabled = false;
+
+                
+                btnOpenServer.Text = "Mở kết nối";
+                btnOpenServer.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Server gặp lỗi khi ngắt kết nối: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
-        catch (Exception ex)
+        // TRƯỜNG HỢP 2: 
+        else
         {
-            MessageBox.Show($"Lỗi không thể mở Socket Server: {ex.Message}", "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            try
+            {
+                int port = string.IsNullOrEmpty(txtPort.Text) ? 9050 : int.Parse(txtPort.Text);
+                txtPort.Text = port.ToString(); // Đưa số port hiển thị lên ô nhập liệu trên giao diện
+
+                IPEndPoint ipep = new IPEndPoint(IPAddress.Any, port);
+                serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                serverSocket.Bind(ipep);
+                serverSocket.Listen(10);
+
+                // Bật công tắc trạng thái hoạt động
+                isRunning = true;
+
+                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã mở thành công tại Port: {port}\r\n");
+                txtMessage.Enabled = true;
+                btnDisconectAll.Enabled = true;
+
+                
+                btnOpenServer.Text = "Dừng";
+                btnOpenServer.Enabled = true;
+
+                // Khởi chạy luồng ngầm canh cửa đón Client
+                Thread threadListen = new Thread(ListenForClients);
+                threadListen.IsBackground = true;
+                threadListen.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi không thể mở Socket Server: {ex.Message}", "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
     private void ListenForClients()
