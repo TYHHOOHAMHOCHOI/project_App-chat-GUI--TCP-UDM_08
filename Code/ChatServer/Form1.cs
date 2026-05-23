@@ -340,7 +340,34 @@ public partial class Form1 : Form
 
     private void button1_Click_1(object sender, EventArgs e)
     {
+        // 1. Tạo một Menu ngữ cảnh thả xuống
+        ContextMenuStrip emojiMenu = new ContextMenuStrip();
 
+        // 2. Danh sách các icon/emoji bạn muốn cho người dùng chọn
+        string[] emojis = { "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😋", "😎", "😍", "😘", "👍", "👎", "❤️" };
+
+        // 3. Vòng lặp tự động thêm từng Emoji thành một dòng trong Menu
+        foreach (string emoji in emojis)
+        {
+            ToolStripMenuItem item = new ToolStripMenuItem(emoji);
+
+            // Cài đặt cỡ chữ hiển thị icon cho to và rõ ràng hơn (Cỡ 14)
+            item.Font = new Font("Segoe UI Emoji", 14);
+
+            // Khi người dùng click chọn vào một icon cụ thể
+            item.Click += (s, args) =>
+            {
+                // Tự động chèn icon được chọn vào vị trí con trỏ đang đứng trong ô Nhập tin nhắn
+                txtMessage.AppendText(emoji);
+                txtMessage.Focus(); // Giữ con trỏ chuột ở ô nhập để gõ tiếp
+            };
+
+            emojiMenu.Items.Add(item);
+        }
+
+        // 4. Hiển thị menu xổ xuống ngay sát góc dưới bên trái của nút bấm mặt cười
+        Button btn = (Button)sender;
+        emojiMenu.Show(btn, new Point(0, btn.Height));
     }
 
     private void rtbLog_TextChanged(object sender, EventArgs e)
