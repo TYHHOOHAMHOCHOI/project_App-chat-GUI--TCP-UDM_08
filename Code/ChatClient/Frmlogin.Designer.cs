@@ -31,16 +31,12 @@ partial class Frmlogin
         loginlogin = new Button();
         panel1 = new Panel();
         panel3 = new Panel();
-        label2 = new Label();
-        textBox2 = new TextBox();
-        textBox1 = new TextBox();
-        tpserver = new Label();
         signup = new Label();
         label1 = new Label();
         loginpassword = new TextBox();
         password = new Label();
         loginusername = new TextBox();
-        username = new Label();
+        account = new Label();
         panel4 = new Panel();
         panel2 = new Panel();
         pictureBox1 = new PictureBox();
@@ -55,7 +51,7 @@ partial class Frmlogin
         loginlogin.BackColor = Color.FromArgb(128, 128, 255);
         loginlogin.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
         loginlogin.ForeColor = Color.White;
-        loginlogin.Location = new Point(42, 383);
+        loginlogin.Location = new Point(42, 335);
         loginlogin.Name = "loginlogin";
         loginlogin.Size = new Size(427, 48);
         loginlogin.TabIndex = 1;
@@ -75,17 +71,13 @@ partial class Frmlogin
         // 
         // panel3
         // 
-        panel3.Controls.Add(label2);
-        panel3.Controls.Add(textBox2);
-        panel3.Controls.Add(textBox1);
-        panel3.Controls.Add(tpserver);
         panel3.Controls.Add(signup);
         panel3.Controls.Add(label1);
         panel3.Controls.Add(loginpassword);
         panel3.Controls.Add(loginlogin);
         panel3.Controls.Add(password);
         panel3.Controls.Add(loginusername);
-        panel3.Controls.Add(username);
+        panel3.Controls.Add(account);
         panel3.Controls.Add(panel4);
         panel3.Dock = DockStyle.Right;
         panel3.Location = new Point(468, 0);
@@ -93,59 +85,12 @@ partial class Frmlogin
         panel3.Size = new Size(503, 504);
         panel3.TabIndex = 3;
         // 
-        // label2
-        // 
-        label2.AccessibleRole = AccessibleRole.TitleBar;
-        label2.AutoSize = true;
-        label2.BackColor = Color.Gainsboro;
-        label2.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-        label2.ForeColor = Color.Blue;
-        label2.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
-        label2.Location = new Point(328, 59);
-        label2.Name = "label2";
-        label2.Size = new Size(91, 36);
-        label2.TabIndex = 10;
-        label2.Text = "Port";
-        label2.Click += label2_Click_1;
-        // 
-        // textBox2
-        // 
-        textBox2.Location = new Point(328, 108);
-        textBox2.Multiline = true;
-        textBox2.Name = "textBox2";
-        textBox2.Size = new Size(141, 43);
-        textBox2.TabIndex = 9;
-        textBox2.TextChanged += textBox2_TextChanged;
-        // 
-        // textBox1
-        // 
-        textBox1.Location = new Point(43, 108);
-        textBox1.Multiline = true;
-        textBox1.Name = "textBox1";
-        textBox1.Size = new Size(271, 43);
-        textBox1.TabIndex = 8;
-        // 
-        // tpserver
-        // 
-        tpserver.AccessibleRole = AccessibleRole.TitleBar;
-        tpserver.AutoSize = true;
-        tpserver.BackColor = Color.Gainsboro;
-        tpserver.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-        tpserver.ForeColor = Color.Blue;
-        tpserver.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
-        tpserver.Location = new Point(42, 59);
-        tpserver.Name = "tpserver";
-        tpserver.Size = new Size(186, 36);
-        tpserver.TabIndex = 7;
-        tpserver.Text = "IP Server";
-        tpserver.Click += label2_Click;
-        // 
         // signup
         // 
         signup.AutoSize = true;
         signup.Font = new Font("Courier New", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
         signup.ForeColor = Color.Red;
-        signup.Location = new Point(344, 444);
+        signup.Location = new Point(344, 396);
         signup.Name = "signup";
         signup.Size = new Size(110, 27);
         signup.TabIndex = 6;
@@ -157,7 +102,7 @@ partial class Frmlogin
         label1.AutoSize = true;
         label1.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
         label1.ForeColor = Color.FromArgb(64, 0, 0);
-        label1.Location = new Point(67, 444);
+        label1.Location = new Point(67, 396);
         label1.Name = "label1";
         label1.Size = new Size(278, 27);
         label1.TabIndex = 5;
@@ -166,7 +111,7 @@ partial class Frmlogin
         // 
         // loginpassword
         // 
-        loginpassword.Location = new Point(42, 311);
+        loginpassword.Location = new Point(42, 263);
         loginpassword.Multiline = true;
         loginpassword.Name = "loginpassword";
         loginpassword.PasswordChar = '*';
@@ -181,7 +126,7 @@ partial class Frmlogin
         password.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
         password.ForeColor = Color.Blue;
         password.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
-        password.Location = new Point(42, 266);
+        password.Location = new Point(42, 218);
         password.Name = "password";
         password.Size = new Size(167, 36);
         password.TabIndex = 3;
@@ -190,27 +135,27 @@ partial class Frmlogin
         // 
         // loginusername
         // 
-        loginusername.Location = new Point(42, 207);
+        loginusername.Location = new Point(42, 159);
         loginusername.Multiline = true;
         loginusername.Name = "loginusername";
         loginusername.Size = new Size(427, 43);
         loginusername.TabIndex = 2;
         loginusername.TextChanged += textBox1_TextChanged;
         // 
-        // username
+        // account
         // 
-        username.AccessibleRole = AccessibleRole.TitleBar;
-        username.AutoSize = true;
-        username.BackColor = Color.Gainsboro;
-        username.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-        username.ForeColor = Color.Blue;
-        username.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
-        username.Location = new Point(41, 158);
-        username.Name = "username";
-        username.Size = new Size(167, 36);
-        username.TabIndex = 1;
-        username.Text = "Username";
-        username.Click += username_Click;
+        account.AccessibleRole = AccessibleRole.TitleBar;
+        account.AutoSize = true;
+        account.BackColor = Color.Gainsboro;
+        account.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        account.ForeColor = Color.Blue;
+        account.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
+        account.Location = new Point(41, 110);
+        account.Name = "account";
+        account.Size = new Size(148, 36);
+        account.TabIndex = 1;
+        account.Text = "Account";
+        account.Click += username_Click;
         // 
         // panel4
         // 
@@ -268,14 +213,10 @@ partial class Frmlogin
     private Panel panel3;
     private PictureBox pictureBox1;
     private TextBox loginusername;
-    private Label username;
+    private Label account;
     private Panel panel4;
     private TextBox loginpassword;
     private Label password;
     private Label label1;
     private Label signup;
-    private TextBox textBox1;
-    private Label tpserver;
-    private Label label2;
-    private TextBox textBox2;
 }

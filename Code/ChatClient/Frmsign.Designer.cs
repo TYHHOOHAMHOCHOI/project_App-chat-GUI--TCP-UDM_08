@@ -41,6 +41,8 @@
             label1 = new Label();
             panel2 = new Panel();
             pictureBox1 = new PictureBox();
+            textBox1 = new TextBox();
+            label6 = new Label();
             panel1.SuspendLayout();
             panel3.SuspendLayout();
             panel2.SuspendLayout();
@@ -59,6 +61,8 @@
             // 
             // panel3
             // 
+            panel3.Controls.Add(textBox1);
+            panel3.Controls.Add(label6);
             panel3.Controls.Add(label5);
             panel3.Controls.Add(label4);
             panel3.Controls.Add(reusername);
@@ -101,7 +105,7 @@
             // 
             // reusername
             // 
-            reusername.Location = new Point(45, 66);
+            reusername.Location = new Point(45, 52);
             reusername.Name = "reusername";
             reusername.Size = new Size(427, 39);
             reusername.TabIndex = 2;
@@ -109,7 +113,7 @@
             // 
             // recopassword
             // 
-            recopassword.Location = new Point(45, 321);
+            recopassword.Location = new Point(45, 327);
             recopassword.Name = "recopassword";
             recopassword.Size = new Size(427, 39);
             recopassword.TabIndex = 7;
@@ -120,7 +124,7 @@
             label3.AutoSize = true;
             label3.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.Blue;
-            label3.Location = new Point(45, 264);
+            label3.Location = new Point(45, 282);
             label3.Name = "label3";
             label3.Size = new Size(319, 36);
             label3.TabIndex = 6;
@@ -142,7 +146,7 @@
             // 
             // repassword
             // 
-            repassword.Location = new Point(45, 189);
+            repassword.Location = new Point(45, 234);
             repassword.Name = "repassword";
             repassword.Size = new Size(427, 39);
             repassword.TabIndex = 3;
@@ -152,7 +156,7 @@
             label2.AutoSize = true;
             label2.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.Blue;
-            label2.Location = new Point(45, 136);
+            label2.Location = new Point(45, 192);
             label2.Name = "label2";
             label2.Size = new Size(167, 36);
             label2.TabIndex = 1;
@@ -191,6 +195,24 @@
             pictureBox1.TabStop = false;
             pictureBox1.Click += label1_Click;
             // 
+            // textBox1
+            // 
+            textBox1.Location = new Point(45, 140);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(427, 39);
+            textBox1.TabIndex = 11;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label6.ForeColor = Color.Blue;
+            label6.Location = new Point(45, 98);
+            label6.Name = "label6";
+            label6.Size = new Size(110, 36);
+            label6.TabIndex = 10;
+            label6.Text = "Email";
+            // 
             // Frmsign
             // 
             AcceptButton = register;
@@ -226,5 +248,7 @@
         private Label label4;
         private Label label5;
         private PictureBox pictureBox1;
+        private TextBox textBox1;
+        private Label label6;
     }
 }
