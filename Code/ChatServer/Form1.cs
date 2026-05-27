@@ -120,7 +120,7 @@ public partial class Form1 : Form
                     serverSocket.Close();
                 }
 
-                
+
                 lock (listClientOnline)
                 {
                     foreach (Socket clientSocket in listClientOnline)
@@ -141,14 +141,16 @@ public partial class Form1 : Form
                     listClientOnline.Clear();
                 }
 
-               
-                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã ngắt kết nối hoàn toàn.\r\n");
+
+                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã đóng hoàn toàn và ngừng lắng nghe kết nối.\r\n");
                 lblSoClient.Text = "Số client: 0";
 
                 txtMessage.Enabled = false;
                 btnDisconectAll.Enabled = false;
 
-                
+                //mở ổ port khi bấm Dừng server
+                txtPort.Enabled = true;
+
                 btnOpenServer.Text = "Mở kết nối";
                 btnOpenServer.Enabled = true;
             }
@@ -157,20 +159,35 @@ public partial class Form1 : Form
                 MessageBox.Show($"Server gặp lỗi khi ngắt kết nối: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-        // TRƯỜNG HỢP 2: 
+        // TRƯỜNG HỢP 2: mở server
         else
         {
+            
+            if (string.IsNullOrEmpty(txtPort.Text.Trim()))
+            {
+                MessageBox.Show("Cảnh báo: Ô Port không được để trống! Hệ thống tự động gán Port mặc định là 9050.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPort.Text = "9050";
+            }
+
+           
+            //Thay thế dòng int.Parse bằng int.TryParse an toàn
+            // Chặn crash nếu người dùng nhập chữ
+            if (!int.TryParse(txtPort.Text.Trim(), out int port) || port < 1 || port > 65535)
+            {
+                MessageBox.Show("Cổng Port nhập vào không hợp lệ!", "Lỗi Nhập Liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtPort.Focus();
+                return;
+            }
+
             try
             {
-                int port = string.IsNullOrEmpty(txtPort.Text) ? 9050 : int.Parse(txtPort.Text);
-                txtPort.Text = port.ToString(); // Đưa số port hiển thị lên ô nhập liệu trên giao diện
-
+                
                 IPEndPoint ipep = new IPEndPoint(IPAddress.Any, port);
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 serverSocket.Bind(ipep);
                 serverSocket.Listen(10);
 
-                // Bật công tắc trạng thái hoạt động
+                
                 isRunning = true;
 
                 rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã mở thành công tại Port: {port}\r\n");
@@ -178,6 +195,9 @@ public partial class Form1 : Form
                 btnDisconectAll.Enabled = true;
 
                 
+                // Khóa ô nhập port lại khi server đang chạy       
+                txtPort.Enabled = false;
+
                 btnOpenServer.Text = "Dừng";
                 btnOpenServer.Enabled = true;
 
@@ -186,6 +206,8 @@ public partial class Form1 : Form
                 threadListen.IsBackground = true;
                 threadListen.Start();
             }
+            
+            
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi không thể mở Socket Server: {ex.Message}", "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -278,7 +300,10 @@ public partial class Form1 : Form
             lblSoClient.Text = "Số client: 0";
             txtMessage.Enabled = false;
 
+            txtPort.Enabled = true;
 
+
+            btnOpenServer.Text = "Mở kết nối";// đổi Dừng -> Mở kết nối
             btnOpenServer.Enabled = true;
             btnDisconectAll.Enabled = false;
 
