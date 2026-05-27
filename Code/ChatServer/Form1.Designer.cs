@@ -287,7 +287,7 @@ partial class Form1
         button1.Name = "button1";
         button1.Size = new Size(54, 38);
         button1.TabIndex = 19;
-        button1.Text = "😀";
+        button1.Text = "it ";
         button1.UseVisualStyleBackColor = false;
         button1.Click += button1_Click_1;
         button1.Paint += btnIcon_Paint;

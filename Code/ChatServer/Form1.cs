@@ -206,8 +206,12 @@ public partial class Form1 : Form
                 threadListen.IsBackground = true;
                 threadListen.Start();
             }
-            
-            
+            // Bắt lỗi (Trùng Port)
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
+            {
+                MessageBox.Show($"Cổng Port {port} hiện đang hoạt động trên máy! Vui lòng đổi số Port khác.", "Lỗi Trùng Port", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi không thể mở Socket Server: {ex.Message}", "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
