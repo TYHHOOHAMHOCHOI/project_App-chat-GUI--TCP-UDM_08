@@ -1,3 +1,5 @@
+
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -715,8 +717,8 @@ public partial class Form1 : Form
     // ════════════════════════════════════════════════════════════════════════
     // CÁC HANDLER GIỮ NGUYÊN
     // ════════════════════════════════════════════════════════════════════════
-    private void textBox1_TextChanged(object sender, EventArgs e) { }
-    private void txtUsername_TextChanged(object sender, EventArgs e) { }
-    private void label1_Click(object sender, EventArgs e) { }
-    private void headerRightPanel_Paint(object sender, PaintEventArgs e) { }
+    private void textBox1_TextChanged(object sender,EventArgs e){}
+    private void txtUsername_TextChanged(object sender,EventArgs e){}
+    private void label1_Click(object sender,EventArgs e){}
+    private void headerRightPanel_Paint(object sender,PaintEventArgs e){}
 }
