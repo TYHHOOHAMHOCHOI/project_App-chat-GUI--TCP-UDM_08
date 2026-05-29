@@ -195,7 +195,7 @@ partial class Form1
         // 
         // btnSend
         // 
-        btnSend.Location = new Point(481, 598);
+        btnSend.Location = new Point(488, 598);
         btnSend.Name = "btnSend";
         btnSend.Size = new Size(101, 34);
         btnSend.TabIndex = 14;
@@ -283,11 +283,11 @@ partial class Form1
         button1.FlatAppearance.BorderSize = 0;
         button1.FlatStyle = FlatStyle.Flat;
         button1.Font = new Font("Segoe UI Emoji", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-        button1.Location = new Point(421, 594);
+        button1.Image = (Image)resources.GetObject("button1.Image");
+        button1.Location = new Point(421, 588);
         button1.Name = "button1";
-        button1.Size = new Size(54, 38);
+        button1.Size = new Size(65, 46);
         button1.TabIndex = 19;
-        button1.Text = "it ";
         button1.UseVisualStyleBackColor = false;
         button1.Click += button1_Click_1;
         button1.Paint += btnIcon_Paint;
