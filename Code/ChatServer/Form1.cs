@@ -240,14 +240,14 @@ public partial class Form1 : Form
                 // Đồng bộ hiển thị lên giao diện RichTextBox và DataGridView một cách an toàn
                 this.Invoke((MethodInvoker)delegate
                 {
-                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Máy con kết nối từ: {clientEndPoint}\r\n");
+                    //rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Máy con kết nối từ: {clientEndPoint}\r\n");
                     lblSoClient.Text = $"Số client: {listClientOnline.Count}";
 
                     // Thêm một dòng mới vào bảng DataGridView, gắn Tag = socket để tìm lại
-                    int index = dgvClients.Rows.Add();
-                    dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
-                    dgvClients.Rows[index].Cells["colName"].Value = clientEndPoint; // Tạm hiện IP, đổi thành Username khi nhận LOGIN
-                    dgvClients.Rows[index].Tag = clientSocket;
+                    //int index = dgvClients.Rows.Add();
+                   // dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
+                    //dgvClients.Rows[index].Cells["colName"].Value = clientEndPoint; // Tạm hiện IP, đổi thành Username khi nhận LOGIN
+                    //dgvClients.Rows[index].Tag = clientSocket;
                 });
 
                 // Khởi chạy luồng ngầm riêng cho client này để phát hiện ngắt kết nối + nhận LOGIN
@@ -276,7 +276,8 @@ public partial class Form1 : Form
     private void HandleClient(Socket clientSocket)
     {
         byte[] buffer = new byte[4096];
-        string clientName = clientSocket.RemoteEndPoint?.ToString() ?? "Unknown";
+        string clientName = "Unknown";
+        bool isFirstLogin = true; // Biến cờ để đánh dấu lần đầu nhận gói LOGIN thành công
 
         try
         {
@@ -298,7 +299,32 @@ public partial class Form1 : Form
                         {
                             clientName = username;
                             lock (clientNames) { clientNames[clientSocket] = username; }
-                            UpdateClientNameOnGrid(clientSocket, username);
+
+                            // NẾU LÀ LẦN ĐẦU TIÊN ĐĂNG NHẬP THÀNH CÔNG
+                            if (isFirstLogin)
+                            {
+                                string clientIP = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
+
+                                // Đẩy thông báo và thêm dòng mới vào DataGridView một cách an toàn
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    // 1. Hiện thông báo theo đúng định dạng cậu muốn
+                                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã kết nối với IP {clientIP}\r\n");
+
+                                    // 2. Thêm mới một dòng hoàn chỉnh vào DataGridView (không cần sửa lại nữa)
+                                    int index = dgvClients.Rows.Add();
+                                    dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
+                                    dgvClients.Rows[index].Cells["colName"].Value = clientName; // Hiện tên thật luôn
+                                    dgvClients.Rows[index].Tag = clientSocket;
+                                });
+
+                                isFirstLogin = false; // Đổi cờ để các vòng lặp sau không chạy lại đoạn này nữa
+                            }
+                            else
+                            {
+                                // Nếu lỡ client gửi lại gói LOGIN lần nữa (hiếm gặp), chỉ cập nhật lại trên lưới thôi
+                                UpdateClientNameOnGrid(clientSocket, username);
+                            }
                         }
                     }
                 }

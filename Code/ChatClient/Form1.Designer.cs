@@ -54,13 +54,14 @@ partial class Form1
         dgvUsers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         dgvUsers.Columns.AddRange(new DataGridViewColumn[] { colID, colName, colChat });
         dgvUsers.Font = new Font("Segoe UI", 9F);
-        dgvUsers.Location = new Point(1070, 216);
+        dgvUsers.Location = new Point(658, 135);
+        dgvUsers.Margin = new Padding(2);
         dgvUsers.Name = "dgvUsers";
         dgvUsers.ReadOnly = true;
         dgvUsers.RowHeadersVisible = false;
         dgvUsers.RowHeadersWidth = 51;
         dgvUsers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dgvUsers.Size = new Size(452, 611);
+        dgvUsers.Size = new Size(278, 382);
         dgvUsers.TabIndex = 0;
         dgvUsers.CellClick += dgvUsers_CellClick;
         dgvUsers.CellContentClick += dgvUsers_CellContentClick;
@@ -92,12 +93,14 @@ partial class Form1
         rtbChat.BackColor = SystemColors.Control;
         rtbChat.Font = new Font("Segoe UI", 10F);
         rtbChat.ForeColor = Color.Black;
-        rtbChat.Location = new Point(16, 216);
+        rtbChat.Location = new Point(10, 135);
+        rtbChat.Margin = new Padding(2);
         rtbChat.Name = "rtbChat";
         rtbChat.ReadOnly = true;
-        rtbChat.Size = new Size(1025, 611);
+        rtbChat.Size = new Size(632, 383);
         rtbChat.TabIndex = 1;
         rtbChat.Text = "";
+        rtbChat.TextChanged += rtbChat_TextChanged;
         // 
         // txtMessage
         // 
@@ -105,9 +108,10 @@ partial class Form1
         txtMessage.BackColor = Color.White;
         txtMessage.Font = new Font("Segoe UI", 9F);
         txtMessage.ForeColor = Color.Black;
-        txtMessage.Location = new Point(16, 844);
+        txtMessage.Location = new Point(10, 528);
+        txtMessage.Margin = new Padding(2);
         txtMessage.Name = "txtMessage";
-        txtMessage.Size = new Size(918, 39);
+        txtMessage.Size = new Size(566, 27);
         txtMessage.TabIndex = 2;
         // 
         // btnSend
@@ -116,9 +120,10 @@ partial class Form1
         btnSend.BackColor = Color.White;
         btnSend.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         btnSend.ForeColor = Color.Black;
-        btnSend.Location = new Point(994, 846);
+        btnSend.Location = new Point(612, 529);
+        btnSend.Margin = new Padding(2);
         btnSend.Name = "btnSend";
-        btnSend.Size = new Size(124, 42);
+        btnSend.Size = new Size(76, 26);
         btnSend.TabIndex = 4;
         btnSend.Text = "Gửi";
         btnSend.UseVisualStyleBackColor = false;
@@ -130,9 +135,10 @@ partial class Form1
         btnSendImage.BackColor = Color.White;
         btnSendImage.Font = new Font("Segoe UI", 9F);
         btnSendImage.ForeColor = Color.Black;
-        btnSendImage.Location = new Point(1124, 847);
+        btnSendImage.Location = new Point(692, 529);
+        btnSendImage.Margin = new Padding(2);
         btnSendImage.Name = "btnSendImage";
-        btnSendImage.Size = new Size(117, 38);
+        btnSendImage.Size = new Size(72, 24);
         btnSendImage.TabIndex = 5;
         btnSendImage.Text = "Gửi ảnh";
         btnSendImage.UseVisualStyleBackColor = false;
@@ -144,9 +150,10 @@ partial class Form1
         btnEmoji.BackColor = SystemColors.InactiveCaption;
         btnEmoji.Font = new Font("Segoe UI Emoji", 10F);
         btnEmoji.ForeColor = Color.Black;
-        btnEmoji.Location = new Point(943, 843);
+        btnEmoji.Location = new Point(580, 527);
+        btnEmoji.Margin = new Padding(2);
         btnEmoji.Name = "btnEmoji";
-        btnEmoji.Size = new Size(44, 53);
+        btnEmoji.Size = new Size(27, 33);
         btnEmoji.TabIndex = 3;
         btnEmoji.Text = "😀";
         btnEmoji.UseVisualStyleBackColor = false;
@@ -169,53 +176,51 @@ partial class Form1
         headerPanel.Controls.Add(lblTitle);
         headerPanel.Dock = DockStyle.Top;
         headerPanel.Location = new Point(0, 0);
+        headerPanel.Margin = new Padding(2);
         headerPanel.Name = "headerPanel";
-        headerPanel.Padding = new Padding(13, 10, 13, 10);
-        headerPanel.Size = new Size(1535, 210);
+        headerPanel.Padding = new Padding(8, 6, 8, 6);
+        headerPanel.Size = new Size(945, 131);
         headerPanel.TabIndex = 6;
         // 
         // textBox3
         // 
-        textBox3.Location = new Point(818, 14);
-        textBox3.Margin = new Padding(5);
+        textBox3.Location = new Point(503, 9);
         textBox3.Name = "textBox3";
-        textBox3.Size = new Size(154, 39);
+        textBox3.Size = new Size(96, 27);
         textBox3.TabIndex = 38;
         // 
         // textBox2
         // 
-        textBox2.Location = new Point(427, 98);
-        textBox2.Margin = new Padding(5);
+        textBox2.Location = new Point(263, 61);
         textBox2.Name = "textBox2";
-        textBox2.Size = new Size(308, 39);
+        textBox2.Size = new Size(191, 27);
         textBox2.TabIndex = 37;
         textBox2.Text = "127.0.0.1";
         // 
         // textBox1
         // 
-        textBox1.Location = new Point(818, 98);
-        textBox1.Margin = new Padding(5);
+        textBox1.Location = new Point(503, 61);
         textBox1.Name = "textBox1";
-        textBox1.Size = new Size(154, 39);
+        textBox1.Size = new Size(96, 27);
         textBox1.TabIndex = 36;
         textBox1.TextChanged += textBox1_TextChanged;
         // 
         // txtUsername
         // 
-        txtUsername.Location = new Point(427, 14);
-        txtUsername.Margin = new Padding(5);
+        txtUsername.Location = new Point(263, 9);
         txtUsername.Name = "txtUsername";
         txtUsername.ReadOnly = true;
-        txtUsername.Size = new Size(308, 39);
+        txtUsername.Size = new Size(191, 27);
         txtUsername.TabIndex = 35;
         txtUsername.TextChanged += txtUsername_TextChanged;
         // 
         // unconection
         // 
         unconection.ForeColor = Color.Black;
-        unconection.Location = new Point(1084, 98);
+        unconection.Location = new Point(667, 61);
+        unconection.Margin = new Padding(2);
         unconection.Name = "unconection";
-        unconection.Size = new Size(187, 46);
+        unconection.Size = new Size(115, 29);
         unconection.TabIndex = 34;
         unconection.Text = "Ngắt kết nối";
         unconection.UseVisualStyleBackColor = true;
@@ -225,10 +230,10 @@ partial class Form1
         // 
         label3.AutoSize = true;
         label3.ForeColor = Color.Black;
-        label3.Location = new Point(747, 91);
-        label3.Margin = new Padding(16, 14, 8, 14);
+        label3.Location = new Point(460, 57);
+        label3.Margin = new Padding(10, 9, 5, 9);
         label3.Name = "label3";
-        label3.Size = new Size(58, 32);
+        label3.Size = new Size(36, 20);
         label3.TabIndex = 33;
         label3.Text = "Key:";
         // 
@@ -236,21 +241,22 @@ partial class Form1
         // 
         label2.AutoSize = true;
         label2.ForeColor = Color.Black;
-        label2.Location = new Point(278, 24);
-        label2.Margin = new Padding(16, 14, 8, 14);
+        label2.Location = new Point(171, 15);
+        label2.Margin = new Padding(10, 9, 5, 9);
         label2.Name = "label2";
-        label2.Size = new Size(126, 32);
+        label2.Size = new Size(78, 20);
         label2.TabIndex = 32;
         label2.Text = "Username:";
         // 
         // conection
         // 
         conection.ForeColor = Color.Black;
-        conection.Location = new Point(1084, 7);
+        conection.Location = new Point(667, 4);
+        conection.Margin = new Padding(2);
         conection.Name = "conection";
-        conection.Size = new Size(187, 46);
+        conection.Size = new Size(115, 29);
         conection.TabIndex = 31;
-        conection.Text = "Mở kết nối";
+        conection.Text = "Kết nối";
         conection.UseVisualStyleBackColor = true;
         conection.Click += conection_Click;
         // 
@@ -258,10 +264,10 @@ partial class Form1
         // 
         label1.AutoSize = true;
         label1.ForeColor = Color.Black;
-        label1.Location = new Point(744, 21);
-        label1.Margin = new Padding(16, 14, 8, 14);
+        label1.Location = new Point(458, 13);
+        label1.Margin = new Padding(10, 9, 5, 9);
         label1.Name = "label1";
-        label1.Size = new Size(61, 32);
+        label1.Size = new Size(38, 20);
         label1.TabIndex = 26;
         label1.Text = "Port:";
         label1.Click += label1_Click;
@@ -272,11 +278,11 @@ partial class Form1
         lblLoggedIn.AutoSize = true;
         lblLoggedIn.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
         lblLoggedIn.ForeColor = Color.Black;
-        lblLoggedIn.Location = new Point(34, 98);
-        lblLoggedIn.Margin = new Padding(8, 14, 16, 14);
-        lblLoggedIn.MaximumSize = new Size(286, 0);
+        lblLoggedIn.Location = new Point(21, 61);
+        lblLoggedIn.Margin = new Padding(5, 9, 10, 9);
+        lblLoggedIn.MaximumSize = new Size(176, 0);
         lblLoggedIn.Name = "lblLoggedIn";
-        lblLoggedIn.Size = new Size(156, 32);
+        lblLoggedIn.Size = new Size(96, 20);
         lblLoggedIn.TabIndex = 21;
         lblLoggedIn.Text = "Not logged in";
         // 
@@ -284,10 +290,10 @@ partial class Form1
         // 
         lblServerIp.AutoSize = true;
         lblServerIp.ForeColor = Color.Black;
-        lblServerIp.Location = new Point(289, 91);
-        lblServerIp.Margin = new Padding(16, 14, 8, 14);
+        lblServerIp.Location = new Point(178, 57);
+        lblServerIp.Margin = new Padding(10, 9, 5, 9);
         lblServerIp.Name = "lblServerIp";
-        lblServerIp.Size = new Size(112, 32);
+        lblServerIp.Size = new Size(69, 20);
         lblServerIp.TabIndex = 22;
         lblServerIp.Text = "IP Server:";
         // 
@@ -296,9 +302,10 @@ partial class Form1
         lblTitle.AutoSize = true;
         lblTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
         lblTitle.ForeColor = Color.Black;
-        lblTitle.Location = new Point(16, 8);
+        lblTitle.Location = new Point(10, 5);
+        lblTitle.Margin = new Padding(2, 0, 2, 0);
         lblTitle.Name = "lblTitle";
-        lblTitle.Size = new Size(239, 65);
+        lblTitle.Size = new Size(150, 41);
         lblTitle.TabIndex = 20;
         lblTitle.Text = "Chat App";
         // 
@@ -308,10 +315,10 @@ partial class Form1
         btnLogoutChat.BackColor = Color.LightSkyBlue;
         btnLogoutChat.Font = new Font("Segoe UI", 9F);
         btnLogoutChat.ForeColor = Color.White;
-        btnLogoutChat.Location = new Point(1351, 837);
-        btnLogoutChat.Margin = new Padding(8, 13, 8, 13);
+        btnLogoutChat.Location = new Point(831, 523);
+        btnLogoutChat.Margin = new Padding(5, 8, 5, 8);
         btnLogoutChat.Name = "btnLogoutChat";
-        btnLogoutChat.Size = new Size(161, 67);
+        btnLogoutChat.Size = new Size(99, 42);
         btnLogoutChat.TabIndex = 24;
         btnLogoutChat.Text = "Logout";
         btnLogoutChat.UseVisualStyleBackColor = false;
@@ -320,10 +327,10 @@ partial class Form1
         // Form1
         // 
         AcceptButton = btnSend;
-        AutoScaleDimensions = new SizeF(13F, 32F);
+        AutoScaleDimensions = new SizeF(8F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = SystemColors.InactiveCaption;
-        ClientSize = new Size(1535, 908);
+        ClientSize = new Size(945, 568);
         Controls.Add(btnSendImage);
         Controls.Add(btnSend);
         Controls.Add(btnEmoji);
@@ -333,7 +340,8 @@ partial class Form1
         Controls.Add(dgvUsers);
         Controls.Add(headerPanel);
         ForeColor = SystemColors.Window;
-        MinimumSize = new Size(923, 554);
+        Margin = new Padding(2);
+        MinimumSize = new Size(575, 364);
         Name = "Form1";
         Text = "Chat Client";
         Load += Form1_Load;

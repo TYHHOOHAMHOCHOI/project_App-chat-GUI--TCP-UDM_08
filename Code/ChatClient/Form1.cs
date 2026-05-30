@@ -73,22 +73,20 @@ public partial class Form1 : Form
         // kiểm tra đã kết nối chưa
         if (isConnected)
         {
-            MessageBox.Show("Client đã kết nối rồi!");
+            MessageBox.Show("Client đã kết nối !");
             return;
         }
 
         string ip = textBox2.Text.Trim();
         string portStr = textBox3.Text.Trim();
 
-        if (string.IsNullOrEmpty(ip) ||
-            string.IsNullOrEmpty(portStr))
+        if (string.IsNullOrEmpty(ip) || string.IsNullOrEmpty(portStr))
         {
             MessageBox.Show(
                 "Vui lòng nhập IP và Port.",
                 "Thông báo",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
-
             return;
         }
 
@@ -100,7 +98,6 @@ public partial class Form1 : Form
                 "Lỗi",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
-
             return;
         }
 
@@ -111,28 +108,32 @@ public partial class Form1 : Form
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            clientSocket.Connect(
-                new IPEndPoint(IPAddress.Parse(ip), port));
+            clientSocket.Connect(new IPEndPoint(IPAddress.Parse(ip), port));
 
             isConnected = true;
-
             SetConnectedState(true);
 
-            AppendChat(
-                $"[Hệ thống] Đã kết nối tới {ip}:{port}");
+            // 1. Đổi lại hiển thị thông báo hệ thống tại Client
+            AppendChat($"[Hệ thống] Bạn đã kết nối đến server với Port {portStr}");
 
-            // gửi thông báo tham gia
-            string joinMsg =
-                $"[{txtUsername.Text.Trim()}] đã tham gia phòng chat.";
+            // 2. Lấy tên user và chuẩn bị chuỗi đăng nhập đúng Server đang đợi
+            string username = txtUsername.Text.Trim();
+            if (string.IsNullOrEmpty(username))
+            {
+                username = "Client_An_Danh"; // Đề phòng trường hợp chưa nhập tên
+            }
 
-            SendRaw(joinMsg);
+            // Tạo chuỗi dạng "LOGIN:" để bên Server cắt chuỗi (Split('\n')) bắt được
+            string loginMsg = $"LOGIN: {username}\n";
 
-            // tạo luồng nhận
+            // Gửi gói tin LOGIN này lên Server ngay lập tức sau khi kết nối thành công
+            SendRaw(loginMsg);
+
+            // tạo luồng nhận dữ liệu từ Server về
             Thread recvThread = new Thread(ReceiveLoop)
             {
                 IsBackground = true
             };
-
             recvThread.Start();
         }
         catch (Exception ex)
@@ -147,6 +148,8 @@ public partial class Form1 : Form
             clientSocket = null;
         }
     }
+
+
 
     /// <summary>Ngắt kết nối</summary>
     private void unconection_Click(object sender, EventArgs e)
@@ -717,8 +720,13 @@ public partial class Form1 : Form
     // ════════════════════════════════════════════════════════════════════════
     // CÁC HANDLER GIỮ NGUYÊN
     // ════════════════════════════════════════════════════════════════════════
-    private void textBox1_TextChanged(object sender,EventArgs e){}
-    private void txtUsername_TextChanged(object sender,EventArgs e){}
-    private void label1_Click(object sender,EventArgs e){}
-    private void headerRightPanel_Paint(object sender,PaintEventArgs e){}
+    private void textBox1_TextChanged(object sender, EventArgs e) { }
+    private void txtUsername_TextChanged(object sender, EventArgs e) { }
+    private void label1_Click(object sender, EventArgs e) { }
+    private void headerRightPanel_Paint(object sender, PaintEventArgs e) { }
+
+    private void rtbChat_TextChanged(object sender, EventArgs e)
+    {
+
+    }
 }
