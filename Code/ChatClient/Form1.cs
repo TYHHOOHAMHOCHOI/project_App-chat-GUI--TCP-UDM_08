@@ -202,42 +202,38 @@ public partial class Form1 : Form
             try
             {
                 int received = clientSocket.Receive(buffer);
-
                 if (received == 0)
                 {
                     Disconnect("Server đã đóng kết nối.");
                     break;
                 }
 
-                string msg =
-                    Encoding.UTF8.GetString(
-                        buffer,
-                        0,
-                        received);
+                string msg = Encoding.UTF8.GetString(buffer, 0, received);
 
                 SafeInvoke(() =>
                 {
-                    foreach (string line in msg.Split(
-                        '\n',
-                        StringSplitOptions.RemoveEmptyEntries))
+                    foreach (string line in msg.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                     {
-                        string trimmed =
-                            line.TrimEnd('\r');
-
-                        if (string.IsNullOrEmpty(trimmed))
-                            continue;
+                        string trimmed = line.TrimEnd('\r');
+                        if (string.IsNullOrEmpty(trimmed)) continue;
 
                         AppendChat(trimmed);
 
-                        TryRegisterUserFromMessage(trimmed);
+                        // SỬA TẠI ĐÂY: Bọc try-catch riêng để bảo vệ luồng không bị sập ngầm
+                        try
+                        {
+                            TryRegisterUserFromMessage(trimmed);
+                        }
+                        catch
+                        {
+                            // Nuốt lỗi bóc tách để giữ luồng nhận tin luôn chạy
+                        }
                     }
                 });
             }
             catch
             {
-                if (isConnected)
-                    Disconnect("Mất kết nối với server.");
-
+                if (isConnected) Disconnect("Mất kết nối với server.");
                 break;
             }
         }
@@ -249,7 +245,6 @@ public partial class Form1 : Form
     private void btnSend_Click(object sender, EventArgs e)
     {
         string text = txtMessage.Text.Trim();
-
         if (string.IsNullOrEmpty(text))
         {
             txtMessage.Focus();
@@ -258,38 +253,25 @@ public partial class Form1 : Form
 
         if (!isConnected || clientSocket == null)
         {
-            MessageBox.Show(
-                "Chưa kết nối tới server!",
-                "Thông báo",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-
+            MessageBox.Show("Chưa kết nối tới server!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         string myName = txtUsername.Text.Trim();
+        if (string.IsNullOrEmpty(myName)) myName = "Ẩn danh";
 
-        if (string.IsNullOrEmpty(myName))
-            myName = "Ẩn danh";
-
-        string timeStamp =
-            DateTime.Now.ToString("HH:mm:ss");
+        string timeStamp = DateTime.Now.ToString("HH:mm:ss");
 
         if (_privateTarget != null)
         {
-            string pmMsg =
-                $"[{timeStamp}] [Gửi riêng] " +
-                $"{myName} -> {_privateTarget}: {text}";
-
+            string pmMsg = $"[{timeStamp}] [Gửi riêng] {myName} -> {_privateTarget}: {text}";
             SendRaw(pmMsg);
-
             AppendChat(pmMsg, Color.DarkViolet);
         }
+        // SỬA TẠI ĐÂY: Chat chung chỉ gửi text thô và \n
         else
         {
-            string broadMsg =
-                $"[{timeStamp}] {myName}: {text}";
-
+            string broadMsg = $"{text}\n";
             SendRaw(broadMsg);
         }
 

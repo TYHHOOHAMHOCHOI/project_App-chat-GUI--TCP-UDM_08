@@ -277,7 +277,7 @@ public partial class Form1 : Form
     {
         byte[] buffer = new byte[4096];
         string clientName = "Unknown";
-        bool isFirstLogin = true; // Biến cờ để đánh dấu lần đầu nhận gói LOGIN thành công
+        bool isFirstLogin = true;
 
         try
         {
@@ -288,10 +288,11 @@ public partial class Form1 : Form
 
                 string data = Encoding.UTF8.GetString(buffer, 0, received);
 
-                // Chỉ parse LOGIN để lấy username, phần MSG/PRV để tuần sau
                 foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                 {
                     string trimmed = line.Trim();
+
+                    // Trường hợp 1: Nhận gói LOGIN
                     if (trimmed.StartsWith("LOGIN:", StringComparison.OrdinalIgnoreCase))
                     {
                         string username = trimmed.Substring(6).Trim();
@@ -300,31 +301,40 @@ public partial class Form1 : Form
                             clientName = username;
                             lock (clientNames) { clientNames[clientSocket] = username; }
 
-                            // NẾU LÀ LẦN ĐẦU TIÊN ĐĂNG NHẬP THÀNH CÔNG
                             if (isFirstLogin)
                             {
                                 string clientIP = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
-
-                                // Đẩy thông báo và thêm dòng mới vào DataGridView một cách an toàn
                                 this.Invoke((MethodInvoker)delegate
                                 {
-                                    // 1. Hiện thông báo theo đúng định dạng cậu muốn
                                     rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã kết nối với IP {clientIP}\r\n");
 
-                                    // 2. Thêm mới một dòng hoàn chỉnh vào DataGridView (không cần sửa lại nữa)
                                     int index = dgvClients.Rows.Add();
                                     dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
-                                    dgvClients.Rows[index].Cells["colName"].Value = clientName; // Hiện tên thật luôn
+                                    dgvClients.Rows[index].Cells["colName"].Value = clientName;
                                     dgvClients.Rows[index].Tag = clientSocket;
                                 });
-
-                                isFirstLogin = false; // Đổi cờ để các vòng lặp sau không chạy lại đoạn này nữa
+                                isFirstLogin = false;
                             }
                             else
                             {
-                                // Nếu lỡ client gửi lại gói LOGIN lần nữa (hiếm gặp), chỉ cập nhật lại trên lưới thôi
                                 UpdateClientNameOnGrid(clientSocket, username);
                             }
+                        }
+                    }
+                    // Trường hợp 2: Client chat chung (Bổ sung nhánh else này)
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(trimmed))
+                        {
+                            string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+                            string formattedMsg = $"[{timeStamp}] {clientName}: {trimmed}";
+
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                rtbLog.AppendText(formattedMsg + "\r\n");
+                            });
+
+                            BroadcastMessage(formattedMsg + "\n");
                         }
                     }
                 }
@@ -333,7 +343,6 @@ public partial class Form1 : Form
         catch { }
         finally
         {
-            // Client đã ngắt kết nối → dọn dẹp
             RemoveClient(clientSocket, clientName);
         }
     }
