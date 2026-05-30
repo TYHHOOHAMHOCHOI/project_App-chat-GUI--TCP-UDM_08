@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -35,7 +33,7 @@ public partial class Form1 : Form
     // ════════════════════════════════════════════════════════════════════════
     // KHỞI TẠO FORM
     // ════════════════════════════════════════════════════════════════════════
-    private void Form1_Load(object sender, EventArgs e)
+    private void Form1_Load(object? sender, EventArgs e)
     {
         txtUsername.Text = _loggedInUser;
 
@@ -46,29 +44,38 @@ public partial class Form1 : Form
         dgvUsers.Columns.Add("colName", "Name");
         dgvUsers.Columns.Add("colChat", "Tin nhắn");
 
-        dgvUsers.DefaultCellStyle.SelectionBackColor =
-            Color.FromArgb(0, 122, 204);
-
-        dgvUsers.DefaultCellStyle.SelectionForeColor = Color.White;
-
+        // Tắt visual styles của Windows để màu tự set có hiệu lực
         dgvUsers.EnableHeadersVisualStyles = false;
 
-        dgvUsers.ColumnHeadersDefaultCellStyle.BackColor =
-            Color.FromArgb(100, 100, 255);
+        // Màu header
+        dgvUsers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(100, 100, 255);
+        dgvUsers.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
 
-        dgvUsers.ColumnHeadersDefaultCellStyle.ForeColor =
-            Color.White;
+        // Màu dòng dữ liệu
+        dgvUsers.DefaultCellStyle.ForeColor = Color.Black;
+        dgvUsers.DefaultCellStyle.BackColor = Color.White;
+        dgvUsers.RowsDefaultCellStyle.ForeColor = Color.Black;
+        dgvUsers.RowsDefaultCellStyle.BackColor = Color.White;
+        dgvUsers.AlternatingRowsDefaultCellStyle.ForeColor = Color.Black;
+        dgvUsers.AlternatingRowsDefaultCellStyle.BackColor = Color.WhiteSmoke;
+
+        // Khuôn mẫu cho mọi dòng mới thêm vào
+        dgvUsers.RowTemplate.DefaultCellStyle.ForeColor = Color.Black;
+        dgvUsers.RowTemplate.DefaultCellStyle.BackColor = Color.White;
+
+        // Màu khi chọn dòng
+        dgvUsers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 122, 204);
+        dgvUsers.DefaultCellStyle.SelectionForeColor = Color.Black;
 
         conection.Click += conection_Click;
         unconection.Click += unconection_Click;
     }
-
     // ════════════════════════════════════════════════════════════════════════
     // KẾT NỐI / NGẮT KẾT NỐI
     // ════════════════════════════════════════════════════════════════════════
 
     /// <summary>Mở kết nối</summary>
-    private void conection_Click(object sender, EventArgs e)
+    private void conection_Click(object? sender, EventArgs e)
     {
         // kiểm tra đã kết nối chưa
         if (isConnected)
@@ -111,10 +118,10 @@ public partial class Form1 : Form
             clientSocket.Connect(new IPEndPoint(IPAddress.Parse(ip), port));
 
             isConnected = true;
-            SetConnectedState(true);
+            //SetConnectedState(true);
 
             // 1. Đổi lại hiển thị thông báo hệ thống tại Client
-            AppendChat($"[Hệ thống] Bạn đã kết nối đến server với Port {portStr}");
+            //AppendChat($"[Hệ thống] Bạn đã kết nối đến server với Port {portStr}");
 
             // 2. Lấy tên user và chuẩn bị chuỗi đăng nhập đúng Server đang đợi
             string username = txtUsername.Text.Trim();
@@ -123,10 +130,11 @@ public partial class Form1 : Form
                 username = "Client_An_Danh"; // Đề phòng trường hợp chưa nhập tên
             }
 
-            // Tạo chuỗi dạng "LOGIN:" để bên Server cắt chuỗi (Split('\n')) bắt được
-            string loginMsg = $"LOGIN: {username}\n";
+            // SỬA: Đồng bộ gọi đúng tên trường txtkey (chữ k viết thường)
+            string clientKey = txtkey.Text.Trim();
 
-            // Gửi gói tin LOGIN này lên Server ngay lập tức sau khi kết nối thành công
+            // Gửi chuỗi LOGIN kèm theo dấu gạch đứng | và chuỗi Key bảo mật
+            string loginMsg = $"LOGIN: {username}|{clientKey}\n";
             SendRaw(loginMsg);
 
             // tạo luồng nhận dữ liệu từ Server về
@@ -149,10 +157,8 @@ public partial class Form1 : Form
         }
     }
 
-
-
     /// <summary>Ngắt kết nối</summary>
-    private void unconection_Click(object sender, EventArgs e)
+    private void unconection_Click(object? sender, EventArgs e)
     {
         // kiểm tra chưa kết nối
         if (!isConnected)
@@ -217,17 +223,63 @@ public partial class Form1 : Form
                         string trimmed = line.TrimEnd('\r');
                         if (string.IsNullOrEmpty(trimmed)) continue;
 
+                        // ════════════════════════════════════════════════════════════════
+                        // ĐOẠN XỬ LÝ KHI PHÁT HIỆN SAI KEY (MÃ KHÓA BẢO MẬT):
+                        // ════════════════════════════════════════════════════════════════
+                        if (trimmed.StartsWith("ERR_KEY:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string errMsg = trimmed.Substring(8).Trim();
+                            isConnected = false;  // ← thêm dòng này
+                            MessageBox.Show(errMsg, "Lỗi Bảo Mật", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            Disconnect("Kết nối bị từ chối do sai mã khóa (Key).");
+                            return;
+                        }
+                        if (trimmed.StartsWith("OK:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string okMsg = trimmed.Substring(3).Trim();
+                            SetConnectedState(true);
+                            AppendChat($"[Hệ thống] {okMsg}");
+                            continue; // ← đổi return thành continue
+                        }
+
+                        if (trimmed.StartsWith("ONLINE:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string onlineName = trimmed.Substring(7).Trim();
+                            if (!_userMap.ContainsKey(onlineName))
+                            {
+                                _userMap[onlineName] = _nextUserId++;
+                                int rowIdx = dgvUsers.Rows.Add();
+                                dgvUsers.Rows[rowIdx].Cells["colID"].Value = _userMap[onlineName];
+                                dgvUsers.Rows[rowIdx].Cells["colName"].Value = onlineName;
+                                dgvUsers.Rows[rowIdx].Cells["colChat"].Value = "Gửi riêng";
+                            }
+                            continue; // ← đổi return thành continue
+                        }
+
+                        if (trimmed.StartsWith("OFFLINE:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string offlineName = trimmed.Substring(8).Trim();
+                            if (_userMap.ContainsKey(offlineName))
+                            {
+                                _userMap.Remove(offlineName);
+                                foreach (DataGridViewRow row in dgvUsers.Rows)
+                                {
+                                    if (row.Cells["colName"].Value?.ToString() == offlineName)
+                                    {
+                                        dgvUsers.Rows.Remove(row);
+                                        break;
+                                    }
+                                }
+                            }
+                            continue; // ← đổi return thành continue
+                        }
                         AppendChat(trimmed);
 
-                        // SỬA TẠI ĐÂY: Bọc try-catch riêng để bảo vệ luồng không bị sập ngầm
                         try
                         {
                             TryRegisterUserFromMessage(trimmed);
                         }
-                        catch
-                        {
-                            // Nuốt lỗi bóc tách để giữ luồng nhận tin luôn chạy
-                        }
+                        catch { }
                     }
                 });
             }
@@ -238,11 +290,10 @@ public partial class Form1 : Form
             }
         }
     }
-
     // ════════════════════════════════════════════════════════════════════════
     // GỬI TIN NHẮN
     // ════════════════════════════════════════════════════════════════════════
-    private void btnSend_Click(object sender, EventArgs e)
+    private void btnSend_Click(object? sender, EventArgs e)
     {
         string text = txtMessage.Text.Trim();
         if (string.IsNullOrEmpty(text))
@@ -268,7 +319,6 @@ public partial class Form1 : Form
             SendRaw(pmMsg);
             AppendChat(pmMsg, Color.DarkViolet);
         }
-        // SỬA TẠI ĐÂY: Chat chung chỉ gửi text thô và \n
         else
         {
             string broadMsg = $"{text}\n";
@@ -286,9 +336,7 @@ public partial class Form1 : Form
 
         try
         {
-            byte[] data =
-                Encoding.UTF8.GetBytes(message);
-
+            byte[] data = Encoding.UTF8.GetBytes(message);
             clientSocket.Send(data);
         }
         catch (Exception ex)
@@ -298,71 +346,11 @@ public partial class Form1 : Form
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // GỬI ẢNH
-    // ════════════════════════════════════════════════════════════════════════
-    private void btnSendImage_Click(object sender, EventArgs e)
-    {
-        if (!isConnected)
-        {
-            MessageBox.Show(
-                "Chưa kết nối tới server!",
-                "Thông báo",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-
-            return;
-        }
-
-        using OpenFileDialog ofd = new OpenFileDialog();
-
-        ofd.Filter =
-            "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif";
-
-        ofd.Title = "Chọn ảnh để gửi";
-
-        if (ofd.ShowDialog() != DialogResult.OK)
-            return;
-
-        try
-        {
-            byte[] imgBytes =
-                System.IO.File.ReadAllBytes(ofd.FileName);
-
-            string base64 =
-                Convert.ToBase64String(imgBytes);
-
-            string myName = txtUsername.Text.Trim();
-
-            string timeStamp =
-                DateTime.Now.ToString("HH:mm:ss");
-
-            string imgMsg =
-                $"[{timeStamp}] {myName}: [IMG]{base64}";
-
-            SendRaw(imgMsg);
-
-            AppendChat(
-                $"[{timeStamp}] {myName}: " +
-                $"[Đã gửi ảnh: " +
-                $"{System.IO.Path.GetFileName(ofd.FileName)}]");
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                $"Lỗi gửi ảnh: {ex.Message}",
-                "Lỗi",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-        }
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
     // EMOJI
     // ════════════════════════════════════════════════════════════════════════
-    private void btnEmoji_Click(object sender, EventArgs e)
+    private void btnEmoji_Click(object? sender, EventArgs e)
     {
-        ContextMenuStrip menu =
-            new ContextMenuStrip();
+        ContextMenuStrip menu = new ContextMenuStrip();
 
         string[] emojis =
         {
@@ -373,12 +361,10 @@ public partial class Form1 : Form
 
         foreach (string emoji in emojis)
         {
-            ToolStripMenuItem item =
-                new ToolStripMenuItem(emoji)
-                {
-                    Font =
-                        new Font("Segoe UI Emoji", 14)
-                };
+            ToolStripMenuItem item = new ToolStripMenuItem(emoji)
+            {
+                Font = new Font("Segoe UI Emoji", 14)
+            };
 
             string cap = emoji;
 
@@ -391,9 +377,10 @@ public partial class Form1 : Form
             menu.Items.Add(item);
         }
 
-        Button btn = (Button)sender;
-
-        menu.Show(btn, new Point(0, btn.Height));
+        if (sender is Button btn)
+        {
+            menu.Show(btn, new Point(0, btn.Height));
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -401,164 +388,104 @@ public partial class Form1 : Form
     // ════════════════════════════════════════════════════════════════════════
     private void TryRegisterUserFromMessage(string line)
     {
-        if (line.Contains("[Hệ thống]") ||
-            line.Contains("[Gửi riêng]"))
+        if (line.Contains("[Hệ thống]") || line.Contains("[Gửi riêng]"))
             return;
 
         int bracketEnd = line.IndexOf(']');
+        if (bracketEnd < 0) return;
 
-        if (bracketEnd < 0)
-            return;
+        string afterBracket = line.Substring(bracketEnd + 1).TrimStart();
+        int colonIdx = afterBracket.IndexOf(':');
+        if (colonIdx <= 0) return;
 
-        string afterBracket =
-            line.Substring(bracketEnd + 1)
-            .TrimStart();
+        string senderName = afterBracket.Substring(0, colonIdx).Trim();
+        if (string.IsNullOrEmpty(senderName)) return;
 
-        int colonIdx =
-            afterBracket.IndexOf(':');
-
-        if (colonIdx <= 0)
-            return;
-
-        string senderName =
-            afterBracket.Substring(0, colonIdx)
-            .Trim();
-
-        if (string.IsNullOrEmpty(senderName))
-            return;
-
-        if (senderName ==
-            txtUsername.Text.Trim())
-            return;
+        if (senderName == txtUsername.Text.Trim()) return;
 
         if (!_userMap.ContainsKey(senderName))
         {
-            _userMap[senderName] =
-                _nextUserId++;
+            _userMap[senderName] = _nextUserId++;
 
             int rowIdx = dgvUsers.Rows.Add();
 
-            dgvUsers.Rows[rowIdx]
-                .Cells["colID"].Value =
-                _userMap[senderName];
-
-            dgvUsers.Rows[rowIdx]
-                .Cells["colName"].Value =
-                senderName;
-
-            dgvUsers.Rows[rowIdx]
-                .Cells["colChat"].Value =
-                "Gửi riêng";
+            dgvUsers.Rows[rowIdx].Cells["colID"].Value = _userMap[senderName];
+            dgvUsers.Rows[rowIdx].Cells["colName"].Value = senderName;
+            dgvUsers.Rows[rowIdx].Cells["colChat"].Value = "Gửi riêng";
         }
     }
 
-    private void dgvUsers_CellClick(
-        object sender,
-        DataGridViewCellEventArgs e)
+    private void dgvUsers_CellClick(object? sender, DataGridViewCellEventArgs e)
     {
-        if (e.RowIndex < 0)
-            return;
+        if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
 
-        if (dgvUsers.Columns[e.ColumnIndex].Name
-            == "colChat")
+        if (dgvUsers.Columns[e.ColumnIndex].Name == "colChat")
         {
-            var cell =
-                dgvUsers.Rows[e.RowIndex]
-                .Cells["colName"];
+            var cell = dgvUsers.Rows[e.RowIndex].Cells["colName"];
+            if (cell.Value == null) return;
 
-            if (cell.Value == null)
-                return;
-
-            string targetName =
-                cell.Value.ToString()!;
+            string targetName = cell.Value.ToString() ?? string.Empty;
+            if (string.IsNullOrEmpty(targetName)) return;
 
             if (_privateTarget == targetName)
             {
+                // Bỏ chọn gửi riêng → trả về màu trắng
                 _privateTarget = null;
-
-                dgvUsers.Rows[e.RowIndex]
-                    .DefaultCellStyle.BackColor =
-                    Color.Empty;
-
-                lblLoggedIn.Text =
-                    $"Đã đăng nhập: " +
-                    $"{txtUsername.Text.Trim()}";
-
-                AppendChat(
-                    "[Hệ thống] Đã chuyển sang chế độ gửi chung.");
+                dgvUsers.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
+                lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
+                AppendChat("[Hệ thống] Đã chuyển sang chế độ gửi chung.");
             }
             else
             {
-                foreach (DataGridViewRow row
-                    in dgvUsers.Rows)
+                // Reset tất cả các dòng về màu trắng trước
+                foreach (DataGridViewRow row in dgvUsers.Rows)
                 {
-                    row.DefaultCellStyle.BackColor =
-                        Color.Empty;
+                    row.DefaultCellStyle.BackColor = Color.White;
                 }
 
                 _privateTarget = targetName;
-
-                dgvUsers.Rows[e.RowIndex]
-                    .DefaultCellStyle.BackColor =
-                    Color.LightYellow;
-
-                lblLoggedIn.Text =
-                    $"Đang gửi riêng tới: {targetName}";
-
-                AppendChat(
-                    $"[Hệ thống] Đang gửi riêng tới [{targetName}]");
+                dgvUsers.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.LightYellow;
+                lblLoggedIn.Text = $"Đang gửi riêng tới: {targetName}";
+                AppendChat($"[Hệ thống] Đang gửi riêng tới [{targetName}]");
             }
         }
     }
 
-    private void dgvUsers_CellContentClick(
-        object sender,
-        DataGridViewCellEventArgs e)
-    {
-    }
+    private void dgvUsers_CellContentClick(object? sender, DataGridViewCellEventArgs e) { }
 
     private void ClearUserList()
     {
         dgvUsers.Rows.Clear();
-
         _userMap.Clear();
-
         _nextUserId = 1;
-
         _privateTarget = null;
     }
 
     // ════════════════════════════════════════════════════════════════════════
     // LOGOUT
     // ════════════════════════════════════════════════════════════════════════
-    private void btnLogout_Click(object sender, EventArgs e)
+    private void btnLogout_Click(object? sender, EventArgs e)
     {
-        DialogResult res =
-            MessageBox.Show(
+        DialogResult res = MessageBox.Show(
                 "Bạn có chắc muốn đăng xuất?",
                 "Xác nhận",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
-        if (res != DialogResult.Yes)
-            return;
+        if (res != DialogResult.Yes) return;
 
         Disconnect("Đã đăng xuất.");
-
         Hide();
 
+        // Giả định Frmlogin của bạn tồn tại trong project
         var loginForm = new Frmlogin();
 
         if (loginForm.ShowDialog() == DialogResult.OK)
         {
-            txtUsername.Text =
-                loginForm.LoggedInUser;
-
+            // Sửa kiểm tra Nullable từ Form đăng nhập trả về
+            txtUsername.Text = loginForm.LoggedInUser ?? "Ẩn danh";
             Show();
-
-            lblLoggedIn.Text =
-                $"Đã đăng nhập: " +
-                $"{loginForm.LoggedInUser}";
+            lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
         }
         else
         {
@@ -569,129 +496,58 @@ public partial class Form1 : Form
     // ════════════════════════════════════════════════════════════════════════
     // HELPERS
     // ════════════════════════════════════════════════════════════════════════
-    private void AppendChat(
-        string text,
-        Color? color = null)
+    private void AppendChat(string text, Color? color = null)
     {
         if (rtbChat.InvokeRequired)
         {
-            SafeInvoke(() =>
-                AppendChat(text, color));
-
+            SafeInvoke(() => AppendChat(text, color));
             return;
         }
 
+        rtbChat.SelectionStart = rtbChat.TextLength;
+        rtbChat.SelectionLength = 0;
+
         if (color.HasValue)
         {
-            rtbChat.SelectionStart =
-                rtbChat.TextLength;
-
-            rtbChat.SelectionLength = 0;
-
-            rtbChat.SelectionColor =
-                color.Value;
-        }
-
-        if (text.Contains("[IMG]"))
-        {
-            int imgIdx =
-                text.IndexOf("[IMG]");
-
-            string prefix =
-                text.Substring(0, imgIdx);
-
-            string b64 =
-                text.Substring(imgIdx + 5);
-
-            rtbChat.AppendText(
-                prefix + "[Ảnh đính kèm]\r\n");
-
-            try
-            {
-                byte[] imgBytes =
-                    Convert.FromBase64String(b64);
-
-                using var ms =
-                    new System.IO.MemoryStream(imgBytes);
-
-                Image img =
-                    Image.FromStream(ms);
-
-                Clipboard.SetImage(img);
-
-                rtbChat.Paste();
-
-                rtbChat.AppendText("\r\n");
-            }
-            catch
-            {
-                rtbChat.AppendText(
-                    "[Không thể hiển thị ảnh]\r\n");
-            }
+            rtbChat.SelectionColor = color.Value;
         }
         else
         {
-            if (text.Contains("[Gửi riêng]") &&
-                !color.HasValue)
-            {
-                rtbChat.SelectionColor =
-                    Color.DarkViolet;
-            }
-            else if (text.Contains("[Hệ thống]") &&
-                     !color.HasValue)
-            {
-                rtbChat.SelectionColor =
-                    Color.Gray;
-            }
-            else if (!color.HasValue)
-            {
-                rtbChat.SelectionColor =
-                    Color.Black;
-            }
-
-            rtbChat.AppendText(text + "\r\n");
+            if (text.Contains("[Gửi riêng]"))
+                rtbChat.SelectionColor = Color.HotPink;
+            else if (text.Contains("[Hệ thống]"))
+                rtbChat.SelectionColor = Color.Gray;
+            else
+                rtbChat.SelectionColor = Color.Black;
         }
 
+        rtbChat.AppendText(text + "\r\n");
         rtbChat.SelectionColor = Color.Black;
-
         rtbChat.ScrollToCaret();
     }
 
     private void SetConnectedState(bool connected)
     {
         conection.Enabled = !connected;
-
         unconection.Enabled = connected;
-
         btnSend.Enabled = connected;
-
-        btnSendImage.Enabled = connected;
-
         btnEmoji.Enabled = connected;
-
         txtMessage.Enabled = connected;
 
         if (connected)
         {
-            lblLoggedIn.Text =
-                $"Đã đăng nhập: " +
-                $"{txtUsername.Text.Trim()}";
-
-            lblServerIp.Text =
-                $"IP Server: " +
-                $"{textBox2.Text.Trim()}";
+            lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
+            lblServerIp.Text = $"IP Server: {textBox2.Text.Trim()}";
         }
         else
         {
-            lblLoggedIn.Text =
-                "Chưa kết nối";
+            lblLoggedIn.Text = "Chưa kết nối";
         }
     }
 
     private void SafeInvoke(Action action)
     {
-        if (IsDisposed)
-            return;
+        if (IsDisposed) return;
 
         if (InvokeRequired)
             Invoke(action);
@@ -699,16 +555,9 @@ public partial class Form1 : Form
             action();
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // CÁC HANDLER GIỮ NGUYÊN
-    // ════════════════════════════════════════════════════════════════════════
-    private void textBox1_TextChanged(object sender, EventArgs e) { }
-    private void txtUsername_TextChanged(object sender, EventArgs e) { }
-    private void label1_Click(object sender, EventArgs e) { }
-    private void headerRightPanel_Paint(object sender, PaintEventArgs e) { }
-
-    private void rtbChat_TextChanged(object sender, EventArgs e)
-    {
-
-    }
+    // ── CÁC HANDLER ĐỒNG BỘ ──────────────────────────────────────────────────
+    private void txtkey_TextChanged(object? sender, EventArgs e) { }
+    private void txtUsername_TextChanged(object? sender, EventArgs e) { }
+    private void label1_Click(object? sender, EventArgs e) { }
+    private void rtbChat_TextChanged(object? sender, EventArgs e) { }
 }

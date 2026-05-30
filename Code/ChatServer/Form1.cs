@@ -273,79 +273,153 @@ public partial class Form1 : Form
     /// <summary>
     /// Luồng ngầm chạy riêng cho mỗi client: nhận lệnh LOGIN và phát hiện ngắt kết nối.
     /// </summary>
-    private void HandleClient(Socket clientSocket)
+   private void HandleClient(Socket clientSocket)
+{
+    byte[] buffer = new byte[4096];
+    string clientName = "Unknown";
+    bool isFirstLogin = true;
+
+    try
     {
-        byte[] buffer = new byte[4096];
-        string clientName = "Unknown";
-        bool isFirstLogin = true;
-
-        try
+        while (isRunning && clientSocket.Connected)
         {
-            while (isRunning && clientSocket.Connected)
+            int received = clientSocket.Receive(buffer);
+            if (received <= 0) break;
+
+            string data = Encoding.UTF8.GetString(buffer, 0, received);
+
+            foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
             {
-                int received = clientSocket.Receive(buffer);
-                if (received <= 0) break;
+                string trimmed = line.Trim();
 
-                string data = Encoding.UTF8.GetString(buffer, 0, received);
-
-                foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                // Trường hợp 1: Nhận gói LOGIN từ máy con
+                if (trimmed.StartsWith("LOGIN:", StringComparison.OrdinalIgnoreCase))
                 {
-                    string trimmed = line.Trim();
+                    string rawLoginData = trimmed.Substring(6).Trim(); // Cắt bỏ "LOGIN:"
+                    
+                    string username = rawLoginData;
+                    string clientKey = "";
 
-                    // Trường hợp 1: Nhận gói LOGIN
-                    if (trimmed.StartsWith("LOGIN:", StringComparison.OrdinalIgnoreCase))
+                    // SỬA TẠI ĐÂY: Tách chuỗi theo ký tự '|' để lấy Username và Key bảo mật
+                    if (rawLoginData.Contains("|"))
                     {
-                        string username = trimmed.Substring(6).Trim();
-                        if (!string.IsNullOrEmpty(username))
-                        {
-                            clientName = username;
-                            lock (clientNames) { clientNames[clientSocket] = username; }
-
-                            if (isFirstLogin)
-                            {
-                                string clientIP = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
-                                this.Invoke((MethodInvoker)delegate
-                                {
-                                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã kết nối với IP {clientIP}\r\n");
-
-                                    int index = dgvClients.Rows.Add();
-                                    dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
-                                    dgvClients.Rows[index].Cells["colName"].Value = clientName;
-                                    dgvClients.Rows[index].Tag = clientSocket;
-                                });
-                                isFirstLogin = false;
-                            }
-                            else
-                            {
-                                UpdateClientNameOnGrid(clientSocket, username);
-                            }
-                        }
+                        string[] parts = rawLoginData.Split('|');
+                        username = parts[0].Trim();
+                        if (parts.Length > 1) clientKey = parts[1].Trim();
                     }
-                    // Trường hợp 2: Client chat chung (Bổ sung nhánh else này)
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(trimmed))
-                        {
-                            string timeStamp = DateTime.Now.ToString("HH:mm:ss");
-                            string formattedMsg = $"[{timeStamp}] {clientName}: {trimmed}";
 
+                    // Lấy Key đang được cấu hình hiện tại trên giao diện Server công khai
+                    string serverKey = "";
+                    this.Invoke((MethodInvoker)delegate {
+                        serverKey = txtKey.Text.Trim();
+                    });
+
+                    // TIẾN HÀNH KIỂM TRA KEY BẢO MẬT
+                    if (clientKey != serverKey)
+                    {
+                        // Nếu sai, gửi gói lệnh từ chối "ERR_KEY:" về cho Client biết
+                        string errorResponse = "ERR_KEY: Mã khóa bảo mật (Key) không chính xác! Vui lòng kiểm tra lại.\n";
+                        byte[] errData = Encoding.UTF8.GetBytes(errorResponse);
+                        clientSocket.Send(errData);
+
+                        // Ghi nhận log lên Server và thoát để rơi vào khối finally (tự ngắt kết nối socket)
+                        this.Invoke((MethodInvoker)delegate {
+                            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Cảnh báo] Từ chối kết nối từ IP {((IPEndPoint)clientSocket.RemoteEndPoint).Address} do nhập sai mật mã Key.\r\n");
+                        });
+                        return; // Bẻ gãy vòng lặp nhận tin, ngắt Client này ngay lập tức!
+                    }
+
+                    // --- NẾU ĐÚNG KEY, TIẾP TỤC XỬ LÝ ĐĂNG NHẬP NHƯ CŨ ---
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        clientName = username;
+                        lock (clientNames) { clientNames[clientSocket] = username; }
+
+                        if (isFirstLogin)
+                        {
+                                string okMsg = $"OK: Kết nối thành công!\n";
+                                clientSocket.Send(Encoding.UTF8.GetBytes(okMsg));
+
+                                // Copy danh sách ra ngoài lock trước
+                                List<string> currentUsers = new List<string>();
+                                lock (clientNames)
+                                {
+                                    foreach (var kv in clientNames)
+                                    {
+                                        if (kv.Key == clientSocket) continue;
+                                        currentUsers.Add(kv.Value);
+                                    }
+                                }
+
+                                // Gửi sau khi đã thoát khỏi lock
+                                foreach (string name in currentUsers)
+                                {
+                                    string userMsg = $"ONLINE: {name}\n";
+                                    clientSocket.Send(Encoding.UTF8.GetBytes(userMsg));
+                                }
+
+                                // Thông báo cho tất cả client cũ biết có người mới vào
+                                string newUserMsg = $"ONLINE: {username}\n";
+                                byte[] newUserData = Encoding.UTF8.GetBytes(newUserMsg);
+
+                                List<Socket> others = new List<Socket>();
+                                lock (listClientOnline)
+                                {
+                                    foreach (Socket other in listClientOnline)
+                                    {
+                                        if (other != clientSocket) others.Add(other);
+                                    }
+                                }
+
+                                foreach (Socket other in others)
+                                {
+                                    try { other.Send(newUserData); } catch { }
+                                }
+
+
+                                string clientIP = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
                             this.Invoke((MethodInvoker)delegate
                             {
-                                rtbLog.AppendText(formattedMsg + "\r\n");
-                            });
+                                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã xác thực thành công Key và kết nối với IP {clientIP}\r\n");
 
-                            BroadcastMessage(formattedMsg + "\n");
+                                int index = dgvClients.Rows.Add();
+                                dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
+                                dgvClients.Rows[index].Cells["colName"].Value = clientName;
+                                dgvClients.Rows[index].Tag = clientSocket;
+                            });
+                            isFirstLogin = false;
                         }
+                        else
+                        {
+                            UpdateClientNameOnGrid(clientSocket, username);
+                        }
+                    }
+                }
+                // Trường hợp 2: Client chat chung
+                else
+                {
+                    if (!string.IsNullOrEmpty(trimmed))
+                    {
+                        string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+                        string formattedMsg = $"[{timeStamp}] {clientName}: {trimmed}";
+
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            rtbLog.AppendText(formattedMsg + "\r\n");
+                        });
+
+                        BroadcastMessage(formattedMsg + "\n");
                     }
                 }
             }
         }
-        catch { }
-        finally
-        {
-            RemoveClient(clientSocket, clientName);
-        }
     }
+    catch { }
+    finally
+    {
+        RemoveClient(clientSocket, clientName);
+    }
+}
 
     /// <summary>
     /// Cập nhật tên username thật lên DataGridView khi nhận được LOGIN.
@@ -385,7 +459,19 @@ public partial class Form1 : Form
         {
             clientNames.Remove(clientSocket);
         }
-
+        // Phát gói thông báo có người ngắt kết nối cho tất cả client khác (trừ chính nó)
+        if (wasRemoved && !string.IsNullOrEmpty(clientName) && clientName != "Unknown")
+        {
+            string offlineMsg = $"OFFLINE: {clientName}\n";
+            byte[] offlineData = Encoding.UTF8.GetBytes(offlineMsg);
+            lock (listClientOnline)
+            {
+                foreach (Socket other in listClientOnline)
+                {
+                    try { other.Send(offlineData); } catch { }
+                }
+            }
+        }
         try
         {
             if (clientSocket.Connected)
