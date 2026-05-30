@@ -82,7 +82,7 @@ partial class Form1
         // lableUsername
         // 
         lableUsername.AutoSize = true;
-        lableUsername.Location = new Point(176, 28);
+        lableUsername.Location = new Point(143, 25);
         lableUsername.Name = "lableUsername";
         lableUsername.Size = new Size(78, 20);
         lableUsername.TabIndex = 2;
@@ -92,7 +92,7 @@ partial class Form1
         // labelAddress
         // 
         labelAddress.AutoSize = true;
-        labelAddress.Location = new Point(176, 65);
+        labelAddress.Location = new Point(156, 65);
         labelAddress.Name = "labelAddress";
         labelAddress.Size = new Size(65, 20);
         labelAddress.TabIndex = 3;
@@ -100,7 +100,7 @@ partial class Form1
         // 
         // txtUsername
         // 
-        txtUsername.Location = new Point(260, 25);
+        txtUsername.Location = new Point(227, 22);
         txtUsername.Name = "txtUsername";
         txtUsername.Size = new Size(191, 27);
         txtUsername.TabIndex = 4;
@@ -108,7 +108,7 @@ partial class Form1
         // 
         // txtAddress
         // 
-        txtAddress.Location = new Point(260, 62);
+        txtAddress.Location = new Point(227, 65);
         txtAddress.Name = "txtAddress";
         txtAddress.ReadOnly = true;
         txtAddress.Size = new Size(191, 27);
@@ -118,7 +118,7 @@ partial class Form1
         // labelPort
         // 
         labelPort.AutoSize = true;
-        labelPort.Location = new Point(481, 28);
+        labelPort.Location = new Point(464, 25);
         labelPort.Name = "labelPort";
         labelPort.Size = new Size(38, 20);
         labelPort.TabIndex = 6;
@@ -128,7 +128,7 @@ partial class Form1
         // labelKey
         // 
         labelKey.AutoSize = true;
-        labelKey.Location = new Point(481, 65);
+        labelKey.Location = new Point(464, 68);
         labelKey.Name = "labelKey";
         labelKey.Size = new Size(36, 20);
         labelKey.TabIndex = 7;
@@ -136,7 +136,7 @@ partial class Form1
         // 
         // txtPort
         // 
-        txtPort.Location = new Point(523, 25);
+        txtPort.Location = new Point(508, 22);
         txtPort.Name = "txtPort";
         txtPort.Size = new Size(125, 27);
         txtPort.TabIndex = 8;
@@ -144,7 +144,7 @@ partial class Form1
         // 
         // txtKey
         // 
-        txtKey.Location = new Point(523, 62);
+        txtKey.Location = new Point(508, 65);
         txtKey.Name = "txtKey";
         txtKey.Size = new Size(125, 27);
         txtKey.TabIndex = 9;
@@ -153,7 +153,7 @@ partial class Form1
         // btnDisconectAll
         // 
         btnDisconectAll.Enabled = false;
-        btnDisconectAll.Location = new Point(512, 156);
+        btnDisconectAll.Location = new Point(497, 156);
         btnDisconectAll.Name = "btnDisconectAll";
         btnDisconectAll.Size = new Size(136, 29);
         btnDisconectAll.TabIndex = 10;
@@ -163,17 +163,19 @@ partial class Form1
         // 
         // rtbLog
         // 
+        rtbLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         rtbLog.Location = new Point(12, 191);
         rtbLog.Name = "rtbLog";
         rtbLog.ReadOnly = true;
         rtbLog.ScrollBars = RichTextBoxScrollBars.Vertical;
-        rtbLog.Size = new Size(636, 370);
+        rtbLog.Size = new Size(621, 370);
         rtbLog.TabIndex = 11;
         rtbLog.Text = "";
         rtbLog.TextChanged += rtbLog_TextChanged;
         // 
         // label1
         // 
+        label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         label1.AutoSize = true;
         label1.Location = new Point(12, 571);
         label1.Name = "label1";
@@ -184,6 +186,7 @@ partial class Form1
         // txtMessage
         // 
         txtMessage.AcceptsReturn = true;
+        txtMessage.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         txtMessage.Location = new Point(12, 598);
         txtMessage.Multiline = true;
         txtMessage.Name = "txtMessage";
@@ -195,6 +198,7 @@ partial class Form1
         // 
         // btnSend
         // 
+        btnSend.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         btnSend.Location = new Point(488, 598);
         btnSend.Name = "btnSend";
         btnSend.Size = new Size(101, 34);
@@ -224,14 +228,15 @@ partial class Form1
         // dgvClients
         // 
         dgvClients.AllowUserToAddRows = false;
+        dgvClients.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
         dgvClients.BackgroundColor = SystemColors.ButtonHighlight;
         dgvClients.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         dgvClients.Columns.AddRange(new DataGridViewColumn[] { colID, colName, colKick, colSend });
-        dgvClients.Location = new Point(664, 28);
+        dgvClients.Location = new Point(639, 28);
         dgvClients.Name = "dgvClients";
         dgvClients.RowHeadersVisible = false;
         dgvClients.RowHeadersWidth = 51;
-        dgvClients.Size = new Size(293, 533);
+        dgvClients.Size = new Size(318, 533);
         dgvClients.TabIndex = 17;
         dgvClients.CellContentClick += dgvClients_CellContentClick;
         // 
@@ -269,6 +274,7 @@ partial class Form1
         // 
         // lblSoClient
         // 
+        lblSoClient.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         lblSoClient.AutoSize = true;
         lblSoClient.Location = new Point(664, 564);
         lblSoClient.Name = "lblSoClient";
@@ -279,6 +285,7 @@ partial class Form1
         // 
         // button1
         // 
+        button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         button1.BackColor = Color.Transparent;
         button1.FlatAppearance.BorderSize = 0;
         button1.FlatStyle = FlatStyle.Flat;
@@ -295,7 +302,7 @@ partial class Form1
         // checkBox1
         // 
         checkBox1.AutoSize = true;
-        checkBox1.Location = new Point(523, 95);
+        checkBox1.Location = new Point(508, 98);
         checkBox1.Name = "checkBox1";
         checkBox1.Size = new Size(49, 24);
         checkBox1.TabIndex = 20;
