@@ -395,23 +395,69 @@ public partial class Form1 : Form
                         }
                     }
                 }
-                // Trường hợp 2: Client chat chung
-                else
-                {
-                    if (!string.IsNullOrEmpty(trimmed))
+                    // Trường hợp 2: Client chat chung
+                    else if (trimmed.StartsWith("PRIVATE:", StringComparison.OrdinalIgnoreCase))
                     {
-                        string timeStamp = DateTime.Now.ToString("HH:mm:ss");
-                        string formattedMsg = $"[{timeStamp}] {clientName}: {trimmed}";
-
-                        this.Invoke((MethodInvoker)delegate
+                        // Format nhận vào: PRIVATE:TênNgườiNhận|Nội dung
+                        string payload = trimmed.Substring(8); // bỏ "PRIVATE:"
+                        int sep = payload.IndexOf('|');
+                        if (sep > 0)
                         {
-                            rtbLog.AppendText(formattedMsg + "\r\n");
-                        });
+                            string targetName = payload.Substring(0, sep).Trim();
+                            string content = payload.Substring(sep + 1).Trim();
+                            string timeStamp = DateTime.Now.ToString("HH:mm:ss");
 
-                        BroadcastMessage(formattedMsg + "\n");
+                            // Tìm socket của người nhận
+                            Socket? targetSocket = null;
+                            lock (clientNames)
+                            {
+                                foreach (var kv in clientNames)
+                                {
+                                    if (kv.Value == targetName)
+                                    {
+                                        targetSocket = kv.Key;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (targetSocket != null)
+                            {
+                                // Gửi cho người nhận
+                                string toReceiver = $"[{timeStamp}] [Gửi riêng] {clientName} → Bạn: {content}\n";
+                                try { targetSocket.Send(Encoding.UTF8.GetBytes(toReceiver)); } catch { }
+
+                                // Ghi log Server (không broadcast)
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    rtbLog.AppendText($"[{timeStamp}] [Gửi riêng] {clientName} → {targetName}: {content}\r\n");
+                                });
+                            }
+                            else
+                            {
+                                // Người nhận không online, báo lại người gửi
+                                string notFound = $"[Hệ thống] {targetName} hiện không online.\n";
+                                clientSocket.Send(Encoding.UTF8.GetBytes(notFound));
+                            }
+                        }
+                    }
+                    // Trường hợp 3: Client chat chung
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(trimmed))
+                        {
+                            string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+                            string formattedMsg = $"[{timeStamp}] {clientName}: {trimmed}";
+
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                rtbLog.AppendText(formattedMsg + "\r\n");
+                            });
+
+                            BroadcastMessage(formattedMsg + "\n");
+                        }
                     }
                 }
-            }
         }
     }
     catch { }
