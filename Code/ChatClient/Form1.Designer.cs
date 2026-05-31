@@ -39,6 +39,7 @@ partial class Form1
         lblServerIp = new Label();
         lblTitle = new Label();
         btnLogoutChat = new Button();
+        btnPublic = new Button();
         ((System.ComponentModel.ISupportInitialize)dgvUsers).BeginInit();
         headerPanel.SuspendLayout();
         SuspendLayout();
@@ -141,6 +142,7 @@ partial class Form1
         // headerPanel
         // 
         headerPanel.BackColor = SystemColors.InactiveCaption;
+        headerPanel.Controls.Add(btnPublic);
         headerPanel.Controls.Add(textBox3);
         headerPanel.Controls.Add(textBox2);
         headerPanel.Controls.Add(txtkey);
@@ -159,6 +161,7 @@ partial class Form1
         headerPanel.Padding = new Padding(13, 10, 13, 10);
         headerPanel.Size = new Size(1536, 210);
         headerPanel.TabIndex = 6;
+        headerPanel.Paint += headerPanel_Paint;
         // 
         // textBox3
         // 
@@ -170,7 +173,7 @@ partial class Form1
         // 
         // textBox2
         // 
-        textBox2.Location = new Point(427, 98);
+        textBox2.Location = new Point(427, 91);
         textBox2.Margin = new Padding(5);
         textBox2.Name = "textBox2";
         textBox2.Size = new Size(308, 39);
@@ -179,12 +182,11 @@ partial class Form1
         // 
         // txtkey
         // 
-        txtkey.Location = new Point(817, 98);
+        txtkey.Location = new Point(817, 91);
         txtkey.Margin = new Padding(5);
         txtkey.Name = "txtkey";
         txtkey.Size = new Size(154, 39);
         txtkey.TabIndex = 36;
-        // ĐÃ SỬA: Đổi từ textBox1_TextChanged thành txtkey_TextChanged để đồng bộ với Form1.cs
         txtkey.TextChanged += txtkey_TextChanged;
         // 
         // txtUsername
@@ -304,6 +306,17 @@ partial class Form1
         btnLogoutChat.UseVisualStyleBackColor = false;
         btnLogoutChat.Click += btnLogout_Click;
         // 
+        // btnPublic
+        // 
+        btnPublic.ForeColor = Color.Black;
+        btnPublic.Location = new Point(1370, 151);
+        btnPublic.Name = "btnPublic";
+        btnPublic.Size = new Size(150, 46);
+        btnPublic.TabIndex = 25;
+        btnPublic.Text = "nhắn chung";
+        btnPublic.UseVisualStyleBackColor = true;
+        btnPublic.Click += btnPublic_Click_1;
+        // 
         // Form1
         // 
         AcceptButton = btnSend;
@@ -354,4 +367,5 @@ partial class Form1
     private DataGridViewTextBoxColumn colID;
     private DataGridViewTextBoxColumn colName;
     private DataGridViewTextBoxColumn colChat;
+    private Button btnPublic;
 }
