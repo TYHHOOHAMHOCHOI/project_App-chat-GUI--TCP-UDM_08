@@ -2,15 +2,17 @@ namespace ChatClient;
 
 static class Program
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
     [STAThread]
     static void Main()
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        Application.Run(new Form1());
-    }    
+
+        // Mở màn hình đăng nhập — chỉ xác thực tài khoản
+        using var login = new Frmlogin();
+        if (login.ShowDialog() != DialogResult.OK)
+            return;
+
+        // Vào Form1, truyền username. IP/Port người dùng tự nhập rồi nhấn "Mở kết nối"
+        Application.Run(new Form1(login.LoggedInUser!));
+    }
 }

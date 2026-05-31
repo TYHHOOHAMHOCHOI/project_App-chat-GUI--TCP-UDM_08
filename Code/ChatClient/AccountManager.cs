@@ -78,6 +78,15 @@ namespace ChatClient
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) return false;
 
             var records = LoadAll();
+            // If there are no accounts yet, create the first account automatically so the
+            // client can log in on a fresh install without requiring a separate registration step.
+            if (!records.Any())
+            {
+                // ignore the out message
+                _ = Register(username, password, out _);
+                return true;
+            }
+
             var rec = records.FirstOrDefault(r => string.Equals(r.Username, username, StringComparison.OrdinalIgnoreCase));
             if (rec == null) return false;
             var hash = Hash(password, rec.Salt);

@@ -2,30 +2,17 @@
 
 partial class Frmlogin
 {
-    /// <summary>
-    ///  Required designer variable.
-    /// </summary>
     private System.ComponentModel.IContainer components = null;
 
-    /// <summary>
-    ///  Clean up any resources being used.
-    /// </summary>
-    /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
     protected override void Dispose(bool disposing)
     {
         if (disposing && (components != null))
-        {
             components.Dispose();
-        }
         base.Dispose(disposing);
     }
 
     #region Windows Form Designer generated code
 
-    /// <summary>
-    ///  Required method for Designer support - do not modify
-    ///  the contents of this method with the code editor.
-    /// </summary>
     private void InitializeComponent()
     {
         loginlogin = new Button();
@@ -120,12 +107,10 @@ partial class Frmlogin
         // 
         // password
         // 
-        password.AccessibleRole = AccessibleRole.TitleBar;
         password.AutoSize = true;
         password.BackColor = Color.Gainsboro;
         password.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
         password.ForeColor = Color.Blue;
-        password.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
         password.Location = new Point(42, 218);
         password.Name = "password";
         password.Size = new Size(167, 36);
@@ -144,12 +129,10 @@ partial class Frmlogin
         // 
         // account
         // 
-        account.AccessibleRole = AccessibleRole.TitleBar;
         account.AutoSize = true;
         account.BackColor = Color.Gainsboro;
         account.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
         account.ForeColor = Color.Blue;
-        account.LiveSetting = System.Windows.Forms.Automation.AutomationLiveSetting.Assertive;
         account.Location = new Point(41, 110);
         account.Name = "account";
         account.Size = new Size(148, 36);
@@ -181,6 +164,7 @@ partial class Frmlogin
         pictureBox1.Location = new Point(0, 0);
         pictureBox1.Name = "pictureBox1";
         pictureBox1.Size = new Size(468, 504);
+        pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
         pictureBox1.TabIndex = 0;
         pictureBox1.TabStop = false;
         // 
@@ -207,6 +191,7 @@ partial class Frmlogin
     }
 
     #endregion
+
     private Button loginlogin;
     private Panel panel1;
     private Panel panel2;

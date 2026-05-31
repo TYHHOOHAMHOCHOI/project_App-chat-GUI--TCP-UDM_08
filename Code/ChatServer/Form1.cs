@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets; 
+using System.Net.Sockets;
 using System.Text;
-using System.Threading;   
+using System.Threading;
 using System.Windows.Forms;
 namespace ChatServer;
 
@@ -13,6 +13,7 @@ public partial class Form1 : Form
 
     private Socket serverSocket;
     private List<Socket> listClientOnline = new List<Socket>();
+    private Dictionary<Socket, string> clientNames = new Dictionary<Socket, string>();
     private bool isRunning = false;
     public Form1()
     {
@@ -36,7 +37,7 @@ public partial class Form1 : Form
 
     private void btnClear_Click(object sender, EventArgs e)
     {
-       
+
         rtbLog.Clear();
         rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Đã xóa toàn bộ tin nhắn.\r\n");
     }
@@ -55,9 +56,9 @@ public partial class Form1 : Form
             MessageBox.Show("Vui lòng nhập tin nhắn trước khi gửi!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             txtMessage.Focus(); // Đưa con trỏ chuột quay lại ô nhập để người dùng gõ luôn
             return;
-        } 
-            
-            
+        }
+
+
 
         if (serverSocket == null || !isRunning)
         {
@@ -67,7 +68,7 @@ public partial class Form1 : Form
 
         // Đọc tên người gửi từ ô Username, nếu trống mặc định là Server
         string senderName = string.IsNullOrEmpty(txtUsername.Text.Trim()) ? "Server" : txtUsername.Text.Trim();
-        
+
         string timeStamp = DateTime.Now.ToString("HH:mm:ss");
         string msg = $"[{timeStamp}] {senderName}: {txtMessage.Text}";
 
@@ -120,7 +121,7 @@ public partial class Form1 : Form
                     serverSocket.Close();
                 }
 
-                
+
                 lock (listClientOnline)
                 {
                     foreach (Socket clientSocket in listClientOnline)
@@ -140,15 +141,18 @@ public partial class Form1 : Form
                     }
                     listClientOnline.Clear();
                 }
+                lock (clientNames) { clientNames.Clear(); }
+                dgvClients.Rows.Clear();
 
-               
-                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã ngắt kết nối hoàn toàn.\r\n");
+                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã đóng hoàn toàn và ngừng lắng nghe kết nối.\r\n");
                 lblSoClient.Text = "Số client: 0";
 
                 txtMessage.Enabled = false;
                 btnDisconectAll.Enabled = false;
 
-                
+                //mở ổ port khi bấm Dừng server
+                txtPort.Enabled = true;
+
                 btnOpenServer.Text = "Mở kết nối";
                 btnOpenServer.Enabled = true;
             }
@@ -157,27 +161,45 @@ public partial class Form1 : Form
                 MessageBox.Show($"Server gặp lỗi khi ngắt kết nối: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-        // TRƯỜNG HỢP 2: 
+        // TRƯỜNG HỢP 2: mở server
         else
         {
+
+            if (string.IsNullOrEmpty(txtPort.Text.Trim()))
+            {
+                MessageBox.Show("Cảnh báo: Ô Port không được để trống! Hệ thống tự động gán Port mặc định là 9050.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPort.Text = "9050";
+            }
+
+
+            //Thay thế dòng int.Parse bằng int.TryParse an toàn
+            // Chặn crash nếu người dùng nhập chữ
+            if (!int.TryParse(txtPort.Text.Trim(), out int port) || port < 1 || port > 65535)
+            {
+                MessageBox.Show("Cổng Port nhập vào không hợp lệ!", "Lỗi Nhập Liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtPort.Focus();
+                return;
+            }
+
             try
             {
-                int port = string.IsNullOrEmpty(txtPort.Text) ? 9050 : int.Parse(txtPort.Text);
-                txtPort.Text = port.ToString(); // Đưa số port hiển thị lên ô nhập liệu trên giao diện
 
                 IPEndPoint ipep = new IPEndPoint(IPAddress.Any, port);
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 serverSocket.Bind(ipep);
                 serverSocket.Listen(10);
 
-                // Bật công tắc trạng thái hoạt động
+
                 isRunning = true;
 
                 rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã mở thành công tại Port: {port}\r\n");
                 txtMessage.Enabled = true;
                 btnDisconectAll.Enabled = true;
 
-                
+
+                // Khóa ô nhập port lại khi server đang chạy       
+                txtPort.Enabled = false;
+
                 btnOpenServer.Text = "Dừng";
                 btnOpenServer.Enabled = true;
 
@@ -186,6 +208,12 @@ public partial class Form1 : Form
                 threadListen.IsBackground = true;
                 threadListen.Start();
             }
+            // Bắt lỗi (Trùng Port)
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
+            {
+                MessageBox.Show($"Cổng Port {port} hiện đang hoạt động trên máy! Vui lòng đổi số Port khác.", "Lỗi Trùng Port", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi không thể mở Socket Server: {ex.Message}", "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -207,17 +235,25 @@ public partial class Form1 : Form
                     listClientOnline.Add(clientSocket);
                 }
 
+                string clientEndPoint = clientSocket.RemoteEndPoint?.ToString() ?? "Unknown";
+
                 // Đồng bộ hiển thị lên giao diện RichTextBox và DataGridView một cách an toàn
                 this.Invoke((MethodInvoker)delegate
                 {
-                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Máy con kết nối từ: {clientSocket.RemoteEndPoint}\r\n");
+                    //rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Máy con kết nối từ: {clientEndPoint}\r\n");
                     lblSoClient.Text = $"Số client: {listClientOnline.Count}";
 
-                    // Thêm một dòng mới vào bảng DataGridView
-                    int index = dgvClients.Rows.Add();
-                    dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
-                    dgvClients.Rows[index].Cells["colName"].Value = $"Client {listClientOnline.Count}";
+                    // Thêm một dòng mới vào bảng DataGridView, gắn Tag = socket để tìm lại
+                    //int index = dgvClients.Rows.Add();
+                   // dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
+                    //dgvClients.Rows[index].Cells["colName"].Value = clientEndPoint; // Tạm hiện IP, đổi thành Username khi nhận LOGIN
+                    //dgvClients.Rows[index].Tag = clientSocket;
                 });
+
+                // Khởi chạy luồng ngầm riêng cho client này để phát hiện ngắt kết nối + nhận LOGIN
+                Thread threadHandleClient = new Thread(() => HandleClient(clientSocket));
+                threadHandleClient.IsBackground = true;
+                threadHandleClient.Start();
             }
             catch (Exception ex)
             {
@@ -230,6 +266,243 @@ public partial class Form1 : Form
                 break;
             }
         }
+    }
+
+    // ===== PHẦN MỚI: Xử lý từng Client riêng biệt =====
+
+    /// <summary>
+    /// Luồng ngầm chạy riêng cho mỗi client: nhận lệnh LOGIN và phát hiện ngắt kết nối.
+    /// </summary>
+   private void HandleClient(Socket clientSocket)
+{
+    byte[] buffer = new byte[4096];
+    string clientName = "Unknown";
+    bool isFirstLogin = true;
+
+    try
+    {
+        while (isRunning && clientSocket.Connected)
+        {
+            int received = clientSocket.Receive(buffer);
+            if (received <= 0) break;
+
+            string data = Encoding.UTF8.GetString(buffer, 0, received);
+
+            foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string trimmed = line.Trim();
+
+                // Trường hợp 1: Nhận gói LOGIN từ máy con
+                if (trimmed.StartsWith("LOGIN:", StringComparison.OrdinalIgnoreCase))
+                {
+                    string rawLoginData = trimmed.Substring(6).Trim(); // Cắt bỏ "LOGIN:"
+                    
+                    string username = rawLoginData;
+                    string clientKey = "";
+
+                    // SỬA TẠI ĐÂY: Tách chuỗi theo ký tự '|' để lấy Username và Key bảo mật
+                    if (rawLoginData.Contains("|"))
+                    {
+                        string[] parts = rawLoginData.Split('|');
+                        username = parts[0].Trim();
+                        if (parts.Length > 1) clientKey = parts[1].Trim();
+                    }
+
+                    // Lấy Key đang được cấu hình hiện tại trên giao diện Server công khai
+                    string serverKey = "";
+                    this.Invoke((MethodInvoker)delegate {
+                        serverKey = txtKey.Text.Trim();
+                    });
+
+                    // TIẾN HÀNH KIỂM TRA KEY BẢO MẬT
+                    if (clientKey != serverKey)
+                    {
+                        // Nếu sai, gửi gói lệnh từ chối "ERR_KEY:" về cho Client biết
+                        string errorResponse = "ERR_KEY: Mã khóa bảo mật (Key) không chính xác! Vui lòng kiểm tra lại.\n";
+                        byte[] errData = Encoding.UTF8.GetBytes(errorResponse);
+                        clientSocket.Send(errData);
+
+                        // Ghi nhận log lên Server và thoát để rơi vào khối finally (tự ngắt kết nối socket)
+                        this.Invoke((MethodInvoker)delegate {
+                            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Cảnh báo] Từ chối kết nối từ IP {((IPEndPoint)clientSocket.RemoteEndPoint).Address} do nhập sai mật mã Key.\r\n");
+                        });
+                        return; // Bẻ gãy vòng lặp nhận tin, ngắt Client này ngay lập tức!
+                    }
+
+                    // --- NẾU ĐÚNG KEY, TIẾP TỤC XỬ LÝ ĐĂNG NHẬP NHƯ CŨ ---
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        clientName = username;
+                        lock (clientNames) { clientNames[clientSocket] = username; }
+
+                        if (isFirstLogin)
+                        {
+                                string okMsg = $"OK: Kết nối thành công!\n";
+                                clientSocket.Send(Encoding.UTF8.GetBytes(okMsg));
+
+                                // Copy danh sách ra ngoài lock trước
+                                List<string> currentUsers = new List<string>();
+                                lock (clientNames)
+                                {
+                                    foreach (var kv in clientNames)
+                                    {
+                                        if (kv.Key == clientSocket) continue;
+                                        currentUsers.Add(kv.Value);
+                                    }
+                                }
+
+                                // Gửi sau khi đã thoát khỏi lock
+                                foreach (string name in currentUsers)
+                                {
+                                    string userMsg = $"ONLINE: {name}\n";
+                                    clientSocket.Send(Encoding.UTF8.GetBytes(userMsg));
+                                }
+
+                                // Thông báo cho tất cả client cũ biết có người mới vào
+                                string newUserMsg = $"ONLINE: {username}\n";
+                                byte[] newUserData = Encoding.UTF8.GetBytes(newUserMsg);
+
+                                List<Socket> others = new List<Socket>();
+                                lock (listClientOnline)
+                                {
+                                    foreach (Socket other in listClientOnline)
+                                    {
+                                        if (other != clientSocket) others.Add(other);
+                                    }
+                                }
+
+                                foreach (Socket other in others)
+                                {
+                                    try { other.Send(newUserData); } catch { }
+                                }
+
+
+                                string clientIP = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã xác thực thành công Key và kết nối với IP {clientIP}\r\n");
+
+                                int index = dgvClients.Rows.Add();
+                                dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
+                                dgvClients.Rows[index].Cells["colName"].Value = clientName;
+                                dgvClients.Rows[index].Tag = clientSocket;
+                            });
+                            isFirstLogin = false;
+                        }
+                        else
+                        {
+                            UpdateClientNameOnGrid(clientSocket, username);
+                        }
+                    }
+                }
+                // Trường hợp 2: Client chat chung
+                else
+                {
+                    if (!string.IsNullOrEmpty(trimmed))
+                    {
+                        string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+                        string formattedMsg = $"[{timeStamp}] {clientName}: {trimmed}";
+
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            rtbLog.AppendText(formattedMsg + "\r\n");
+                        });
+
+                        BroadcastMessage(formattedMsg + "\n");
+                    }
+                }
+            }
+        }
+    }
+    catch { }
+    finally
+    {
+        RemoveClient(clientSocket, clientName);
+    }
+}
+
+    /// <summary>
+    /// Cập nhật tên username thật lên DataGridView khi nhận được LOGIN.
+    /// </summary>
+    private void UpdateClientNameOnGrid(Socket clientSocket, string username)
+    {
+        if (!this.IsHandleCreated) return;
+        try
+        {
+            this.Invoke((MethodInvoker)delegate
+            {
+                foreach (DataGridViewRow row in dgvClients.Rows)
+                {
+                    if (row.Tag == clientSocket)
+                    {
+                        row.Cells["colName"].Value = username;
+                        break;
+                    }
+                }
+                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Client đã đăng nhập: {username}\r\n");
+            });
+        }
+        catch { }
+    }
+
+    /// <summary>
+    /// Xóa client khỏi tất cả danh sách, ghi log, cập nhật giao diện.
+    /// </summary>
+    private void RemoveClient(Socket clientSocket, string clientName)
+    {
+        bool wasRemoved;
+        lock (listClientOnline)
+        {
+            wasRemoved = listClientOnline.Remove(clientSocket);
+        }
+        lock (clientNames)
+        {
+            clientNames.Remove(clientSocket);
+        }
+        // Phát gói thông báo có người ngắt kết nối cho tất cả client khác (trừ chính nó)
+        if (wasRemoved && !string.IsNullOrEmpty(clientName) && clientName != "Unknown")
+        {
+            string offlineMsg = $"OFFLINE: {clientName}\n";
+            byte[] offlineData = Encoding.UTF8.GetBytes(offlineMsg);
+            lock (listClientOnline)
+            {
+                foreach (Socket other in listClientOnline)
+                {
+                    try { other.Send(offlineData); } catch { }
+                }
+            }
+        }
+        try
+        {
+            if (clientSocket.Connected)
+                clientSocket.Shutdown(SocketShutdown.Both);
+            clientSocket.Close();
+        }
+        catch { }
+
+        // Chỉ cập nhật UI nếu thực sự xóa được (tránh trùng khi server dừng hoặc kick)
+        if (!wasRemoved) return;
+        if (!this.IsHandleCreated) return;
+
+        try
+        {
+            this.Invoke((MethodInvoker)delegate
+            {
+                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã ngắt kết nối.\r\n");
+
+                for (int i = dgvClients.Rows.Count - 1; i >= 0; i--)
+                {
+                    if (dgvClients.Rows[i].Tag == clientSocket)
+                    {
+                        dgvClients.Rows.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                lblSoClient.Text = $"Số client: {listClientOnline.Count}";
+            });
+        }
+        catch { }
     }
 
     private void btnDisconectAll_Click(object sender, EventArgs e)
@@ -272,13 +545,17 @@ public partial class Form1 : Form
                 }
                 listClientOnline.Clear();
             }
-
+            lock (clientNames) { clientNames.Clear(); }
+            dgvClients.Rows.Clear();
 
             rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã ngắt kết nối hoàn toàn.\r\n");
             lblSoClient.Text = "Số client: 0";
             txtMessage.Enabled = false;
 
+            txtPort.Enabled = true;
 
+
+            btnOpenServer.Text = "Mở kết nối";// đổi Dừng -> Mở kết nối
             btnOpenServer.Enabled = true;
             btnDisconectAll.Enabled = false;
 
@@ -404,18 +681,32 @@ public partial class Form1 : Form
             // Trường hợp 1: Click cột nút "Disconnect" hoặc "colKick"
             if (dgvClients.Columns[e.ColumnIndex].Name == "colKick" || dgvClients.Columns[e.ColumnIndex].Name == "Disconnect")
             {
-                DialogResult res = MessageBox.Show($"Bạn có muốn ngắt kết nối máy con Client {selectedId} không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                // Lấy tên username thật từ clientNames
+                string kickName;
+                lock (clientNames)
+                {
+                    if (!clientNames.TryGetValue(targetClient, out kickName))
+                        kickName = selectedId;
+                }
+
+                DialogResult res = MessageBox.Show($"Bạn có muốn ngắt kết nối {kickName} không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (res == DialogResult.Yes)
                 {
-                    targetClient.Close(); // Đóng socket kết nối
-
-                    // Thêm đoạn code dưới đây để dọn dẹp giao diện ngay lập tức:
+                    // Xóa khỏi danh sách trước khi đóng socket
                     lock (listClientOnline)
                     {
-                        listClientOnline.RemoveAt(targetIndex); // Xóa khỏi danh sách quản lý
+                        listClientOnline.Remove(targetClient);
                     }
-                    dgvClients.Rows.RemoveAt(targetIndex); // Xóa dòng đó khỏi bảng hiển thị
-                    lblSoClient.Text = $"Số client: {listClientOnline.Count}"; // Cập nhật lại tổng số client
+                    lock (clientNames)
+                    {
+                        clientNames.Remove(targetClient);
+                    }
+
+                    try { targetClient.Close(); } catch { }
+
+                    dgvClients.Rows.RemoveAt(targetIndex);
+                    lblSoClient.Text = $"Số client: {listClientOnline.Count}";
+                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {kickName} đã bị ngắt kết nối (Kick).\r\n");
                 }
             }
 
