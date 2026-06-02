@@ -331,23 +331,38 @@ public partial class Form1 : Form
                         serverKey = txtKey.Text.Trim();
                     });
 
-                    // TIẾN HÀNH KIỂM TRA KEY BẢO MẬT
-                    if (clientKey != serverKey)
-                    {
-                        // Nếu sai, gửi gói lệnh từ chối "ERR_KEY:" về cho Client biết
-                        string errorResponse = "ERR_KEY: Mã khóa bảo mật (Key) không chính xác! Vui lòng kiểm tra lại.\n";
-                        byte[] errData = Encoding.UTF8.GetBytes(errorResponse);
-                        clientSocket.Send(errData);
+                        // TIẾN HÀNH KIỂM TRA KEY BẢO MẬT
+                        if (clientKey != serverKey)
+                        {
+                            // 1. Gửi gói lệnh ERR_KEY kèm theo dấu ngắt dòng rõ ràng để Client xử lý chuẩn
+                            string errorResponse = "ERR_KEY: Mã khóa bảo mật (Key) không chính xác! Vui lòng kiểm tra lại.\n";
+                            byte[] errData = Encoding.UTF8.GetBytes(errorResponse);
+                            clientSocket.Send(errData);
 
-                        // Ghi nhận log lên Server và thoát để rơi vào khối finally (tự ngắt kết nối socket)
-                        this.Invoke((MethodInvoker)delegate {
-                            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Cảnh báo] Từ chối kết nối từ IP {((IPEndPoint)clientSocket.RemoteEndPoint).Address} do nhập sai mật mã Key.\r\n");
-                        });
-                        return; // Bẻ gãy vòng lặp nhận tin, ngắt Client này ngay lập tức!
-                    }
+                            // 2. Ghi log cảnh báo sai Key lên Server
+                            this.Invoke((MethodInvoker)delegate {
+                                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Cảnh báo] Từ chối kết nối từ IP {((IPEndPoint)clientSocket.RemoteEndPoint).Address} do nhập sai mật mã Key.\r\n");
+                            });
 
-                    // --- NẾU ĐÚNG KEY, TIẾP TỤC XỬ LÝ ĐĂNG NHẬP NHƯ CŨ ---
-                    if (!string.IsNullOrEmpty(username))
+                            // 3. Trước khi dứt áo ra đi, đóng Socket ngay tại đây để bên Client lập tức nhận biết và KHÔNG báo "đã kết nối" nữa
+                            try
+                            {
+                                clientSocket.Shutdown(SocketShutdown.Both);
+                                clientSocket.Close();
+                            }
+                            catch { }
+
+                            // 4. Đồng thời xóa Socket này ra khỏi listClientOnline ngay để tránh việc rơi vào khối finally chạy hàm RemoveClient làm rác log "Unknown"
+                            lock (listClientOnline)
+                            {
+                                listClientOnline.Remove(clientSocket);
+                            }
+
+                            return; // Thoát hẳn luồng xử lý đơn này luôn
+                        }
+
+                        // --- NẾU ĐÚNG KEY, TIẾP TỤC XỬ LÝ ĐĂNG NHẬP NHƯ CŨ ---
+                        if (!string.IsNullOrEmpty(username))
                     {
                         clientName = username;
                         lock (clientNames) { clientNames[clientSocket] = username; }
@@ -397,7 +412,7 @@ public partial class Form1 : Form
                                 string clientIP = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
                             this.Invoke((MethodInvoker)delegate
                             {
-                                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã xác thực thành công Key và kết nối với IP {clientIP}\r\n");
+                                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã kết nối với IP {clientIP}\r\n");
 
                                 // Lưu tin hệ thống: kết nối
                                 try { _messageRepo?.SaveMessage("Hệ thống", null, $"{clientName} đã kết nối (IP: {clientIP})", "system"); } catch { }
@@ -593,27 +608,8 @@ public partial class Form1 : Form
     {
         try
         {
-            //ngắt vòng lặp ở luồng ngầm (ListenForClients) tự thoát
-            isRunning = false;
-
-            // Giải phóng database
-            _purgeTimer?.Dispose(); _purgeTimer = null;
-            _messageRepo?.Dispose(); _messageRepo = null;
-
-            //Đóng Socket chính của Server
-            if (serverSocket != null)
-            {
-
-                if (serverSocket.Connected)
-                {
-                    //lệnh này báo là nó sẽ dừng việc nhận và gửi dữ liêu ngay bây h tránh việc đang truyền mà bị lỗi
-                    serverSocket.Shutdown(SocketShutdown.Both);
-                }
-                serverSocket.Close();
-            }
-
-            // duyệt danh sách xem để đóng kết nối của từng client đang online
-            //lock này nó để khóa cái lệnh này lại tránh cho việc cái luồng ngầm nó ko được nhét thêm client mới vào
+            // 1. Duyệt danh sách để đóng kết nối của TỪNG client đang online
+            // KHÔNG cho isRunning = false và KHÔNG đóng serverSocket ở đây để Server tiếp tục chạy
             lock (listClientOnline)
             {
                 foreach (Socket clientSocket in listClientOnline)
@@ -631,28 +627,26 @@ public partial class Form1 : Form
                         catch { }
                     }
                 }
+                // Xóa sạch danh sách client online trong bộ nhớ bộ quản lý
                 listClientOnline.Clear();
             }
+
+            //Xóa sạch danh sách tên Client và xóa các dòng hiển thị trên giao diện bảng
             lock (clientNames) { clientNames.Clear(); }
             dgvClients.Rows.Clear();
 
-            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã ngắt kết nối hoàn toàn.\r\n");
+            
+            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Đã ngắt kết nối của toàn bộ Client. Máy chủ vẫn đang tiếp tục hoạt động...\r\n");
+
+            
             lblSoClient.Text = "Số client: 0";
-            txtMessage.Enabled = false;
 
-            txtPort.Enabled = true;
-
-
-            btnOpenServer.Text = "Mở kết nối";// đổi Dừng -> Mở kết nối
-            btnOpenServer.Enabled = true;
-            btnDisconectAll.Enabled = false;
-
+           
+            btnDisconectAll.Enabled = false; 
         }
         catch (Exception ex)
         {
-
-            MessageBox.Show($"Server đã ngắt kết nối: {ex.Message}", "Thông báo : ", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
+            MessageBox.Show($"Lỗi khi ngắt kết nối hàng loạt: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
 
