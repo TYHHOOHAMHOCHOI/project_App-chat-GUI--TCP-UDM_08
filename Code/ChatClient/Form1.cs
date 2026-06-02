@@ -138,7 +138,6 @@ public partial class Form1 : Form
                             AppendChat($"[Hệ thống] {trimmed.Substring(3).Trim()}");
                             continue;
                         }
-
                         if (trimmed.StartsWith("ONLINE:", StringComparison.OrdinalIgnoreCase))
                         {
                             string onlineName = trimmed.Substring(7).Trim();
@@ -146,11 +145,14 @@ public partial class Form1 : Form
                             {
                                 _userMap[onlineName] = _nextUserId++;
                                 int rowIdx = dgvUsers.Rows.Add();
-                                dgvUsers.Rows[rowIdx].Cells["colID"].Value = _userMap[onlineName];
+                                //dgvUsers.Rows[rowIdx].Cells["colID"].Value = _userMap[onlineName];
                                 dgvUsers.Rows[rowIdx].Cells["colName"].Value = onlineName;
                                 dgvUsers.Rows[rowIdx].Cells["colChat"].Value = "Gửi riêng";
 
-                             
+                                for (int i = 0; i < dgvUsers.Rows.Count; i++)
+                                {
+                                    dgvUsers.Rows[i].Cells["colID"].Value = i + 1;
+                                }
                             }
                             continue;
                         }
@@ -169,7 +171,11 @@ public partial class Form1 : Form
                                         break;
                                     }
                                 }
-                                
+
+                                for (int k = 0; k < dgvUsers.Rows.Count; k++)
+                                {
+                                    dgvUsers.Rows[k].Cells["colID"].Value = k + 1;
+                                }
                             }
                             // Nếu đang nhắn riêng với người vừa offline → tự động thoát chế độ riêng
                             if (_privateTarget == offlineName)
