@@ -149,6 +149,8 @@ public partial class Form1 : Form
                                 dgvUsers.Rows[rowIdx].Cells["colID"].Value = _userMap[onlineName];
                                 dgvUsers.Rows[rowIdx].Cells["colName"].Value = onlineName;
                                 dgvUsers.Rows[rowIdx].Cells["colChat"].Value = "Gửi riêng";
+
+                             
                             }
                             continue;
                         }
@@ -167,6 +169,7 @@ public partial class Form1 : Form
                                         break;
                                     }
                                 }
+                                
                             }
                             // Nếu đang nhắn riêng với người vừa offline → tự động thoát chế độ riêng
                             if (_privateTarget == offlineName)

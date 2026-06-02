@@ -403,9 +403,13 @@ public partial class Form1 : Form
                                 try { _messageRepo?.SaveMessage("Hệ thống", null, $"{clientName} đã kết nối (IP: {clientIP})", "system"); } catch { }
 
                                 int index = dgvClients.Rows.Add();
-                                dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
                                 dgvClients.Rows[index].Cells["colName"].Value = clientName;
                                 dgvClients.Rows[index].Tag = clientSocket;
+
+                                for (int i = 0; i < dgvClients.Rows.Count; i++)
+                                {
+                                    dgvClients.Rows[i].Cells["colID"].Value = i + 1;
+                                }
                             });
                             isFirstLogin = false;
                         }
@@ -572,6 +576,11 @@ public partial class Form1 : Form
                         dgvClients.Rows.RemoveAt(i);
                         break;
                     }
+                }
+
+                for (int k = 0; k < dgvClients.Rows.Count; k++)
+                {
+                    dgvClients.Rows[k].Cells["colID"].Value = k + 1;
                 }
 
                 lblSoClient.Text = $"Số client: {listClientOnline.Count}";
@@ -784,6 +793,12 @@ public partial class Form1 : Form
                     try { targetClient.Close(); } catch { }
 
                     dgvClients.Rows.RemoveAt(targetIndex);
+
+                    for (int k = 0; k < dgvClients.Rows.Count; k++)
+                    {
+                        dgvClients.Rows[k].Cells["colID"].Value = k + 1;
+                    }
+
                     lblSoClient.Text = $"Số client: {listClientOnline.Count}";
                     rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {kickName} đã bị ngắt kết nối (Kick).\r\n");
                 }
