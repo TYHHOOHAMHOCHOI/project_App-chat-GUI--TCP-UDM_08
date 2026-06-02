@@ -67,3 +67,17 @@ SELECT * FROM Users;
 SELECT * FROM Messages;
 
 SELECT * FROM Files;
+
+-- TẠO BẢNG CHATMESSAGES (Lưu trữ tin nhắn - được tạo tự động bởi MessageRepository trong ChatCommon)
+CREATE TABLE IF NOT EXISTS ChatMessages (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Sender TEXT NOT NULL,
+    Receiver TEXT,
+    Content TEXT NOT NULL,
+    MessageType TEXT DEFAULT 'public',
+    SentAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_chatmsg_sender   ON ChatMessages(Sender);
+CREATE INDEX IF NOT EXISTS idx_chatmsg_receiver ON ChatMessages(Receiver);
+CREATE INDEX IF NOT EXISTS idx_chatmsg_sentat   ON ChatMessages(SentAt);

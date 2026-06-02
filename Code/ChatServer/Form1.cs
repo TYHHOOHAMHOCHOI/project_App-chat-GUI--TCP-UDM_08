@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using ChatCommon;
 namespace ChatServer;
 
 public partial class Form1 : Form
@@ -15,6 +16,9 @@ public partial class Form1 : Form
     private List<Socket> listClientOnline = new List<Socket>();
     private Dictionary<Socket, string> clientNames = new Dictionary<Socket, string>();
     private bool isRunning = false;
+    private MessageRepository? _messageRepo;
+    private System.Threading.Timer? _purgeTimer;
+    private static readonly TimeSpan DefaultRetention = TimeSpan.FromDays(7);
     public Form1()
     {
         InitializeComponent();
@@ -77,6 +81,9 @@ public partial class Form1 : Form
         // Gọi hàm phát tin nhắn chung đi
         BroadcastMessage(msg);
 
+        // Lưu tin server broadcast vào database
+        try { _messageRepo?.SaveMessage(senderName, null, txtMessage.Text, "server"); } catch { }
+
         txtMessage.Clear();
         txtMessage.Focus();
     }
@@ -109,6 +116,10 @@ public partial class Form1 : Form
             {
                 // 1. Ngắt vòng lặp ở luồng ngầm
                 isRunning = false;
+
+                // Giải phóng database
+                _purgeTimer?.Dispose(); _purgeTimer = null;
+                _messageRepo?.Dispose(); _messageRepo = null;
 
                 // 2. Đóng Socket chính của Server
                 if (serverSocket != null)
@@ -191,6 +202,12 @@ public partial class Form1 : Form
 
 
                 isRunning = true;
+
+                // Khởi tạo database lưu tin nhắn + timer tự dọn tin cũ mỗi 1 giờ
+                _messageRepo = new MessageRepository();
+                _purgeTimer = new System.Threading.Timer(
+                    _ => { try { _messageRepo?.PurgeOlderThan(DefaultRetention); } catch { } },
+                    null, TimeSpan.Zero, TimeSpan.FromHours(1));
 
                 rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Server đã mở thành công tại Port: {port}\r\n");
                 txtMessage.Enabled = true;
@@ -382,6 +399,9 @@ public partial class Form1 : Form
                             {
                                 rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã xác thực thành công Key và kết nối với IP {clientIP}\r\n");
 
+                                // Lưu tin hệ thống: kết nối
+                                try { _messageRepo?.SaveMessage("Hệ thống", null, $"{clientName} đã kết nối (IP: {clientIP})", "system"); } catch { }
+
                                 int index = dgvClients.Rows.Add();
                                 dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
                                 dgvClients.Rows[index].Cells["colName"].Value = clientName;
@@ -427,6 +447,9 @@ public partial class Form1 : Form
                                 string toReceiver = $"[{timeStamp}] [Gửi riêng] {clientName} → Bạn: {content}\n";
                                 try { targetSocket.Send(Encoding.UTF8.GetBytes(toReceiver)); } catch { }
 
+                                // Lưu tin nhắn riêng vào database
+                                try { _messageRepo?.SaveMessage(clientName, targetName, content, "private"); } catch { }
+
                                 // Ghi log Server (không broadcast)
                                 this.Invoke((MethodInvoker)delegate
                                 {
@@ -455,6 +478,9 @@ public partial class Form1 : Form
                             });
 
                             BroadcastMessage(formattedMsg + "\n");
+
+                            // Lưu tin nhắn chung vào database
+                            try { _messageRepo?.SaveMessage(clientName, null, trimmed, "public"); } catch { }
                         }
                     }
                 }
@@ -536,6 +562,9 @@ public partial class Form1 : Form
             {
                 rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã ngắt kết nối.\r\n");
 
+                // Lưu tin hệ thống: ngắt kết nối
+                try { _messageRepo?.SaveMessage("Hệ thống", null, $"{clientName} đã ngắt kết nối.", "system"); } catch { }
+
                 for (int i = dgvClients.Rows.Count - 1; i >= 0; i--)
                 {
                     if (dgvClients.Rows[i].Tag == clientSocket)
@@ -557,6 +586,10 @@ public partial class Form1 : Form
         {
             //ngắt vòng lặp ở luồng ngầm (ListenForClients) tự thoát
             isRunning = false;
+
+            // Giải phóng database
+            _purgeTimer?.Dispose(); _purgeTimer = null;
+            _messageRepo?.Dispose(); _messageRepo = null;
 
             //Đóng Socket chính của Server
             if (serverSocket != null)
