@@ -101,17 +101,33 @@ namespace ChatCommon
         /// </summary>
         /// <param name="count">Số tin nhắn tối đa.</param>
         public List<ChatMessage> GetPublicMessages(int count = 50)
-        {
-            using var cmd = _conn.CreateCommand();
-            cmd.CommandText = @"
-                SELECT Id, Sender, Receiver, Content, MessageType, SentAt
-                FROM ChatMessages
-                WHERE Receiver IS NULL
-                ORDER BY SentAt DESC
-                LIMIT @count
-            ";
-            cmd.Parameters.AddWithValue("@count", count);
-            return ReadMessages(cmd);
+        {            
+            var list = new List<ChatMessage>();
+            using var conn = new SQLiteConnection(_connectionString);
+
+            conn.Open();
+
+            string sql =@"SELECT * FROM Messages WHERE MessageType='public'ORDER BY SentAt DESC LIMIT @count";
+
+            using var cmd =new SQLiteCommand(sql, conn);
+
+            cmd.Parameters.AddWithValue("@count",count);
+
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                list.Add(new ChatMessage
+                {
+                    Sender =reader["Sender"].ToString(),
+                    Receiver =reader["Receiver"].ToString(),
+                    Content =reader["Content"].ToString(),
+                    MessageType =reader["MessageType"].ToString(),
+                    SentAt =DateTime.Parse(reader["SentAt"].ToString())});
+            }
+            list.Reverse();
+            return list;
+        }
         }
 
         /// <summary>

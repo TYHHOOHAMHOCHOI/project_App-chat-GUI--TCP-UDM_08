@@ -305,7 +305,24 @@ public partial class Form1 : Form
 
             string data = Encoding.UTF8.GetString(buffer, 0, received);
 
-            foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                //dung them load tn
+                data = data.Trim();
+
+                if (data == "LOAD_PUBLIC")
+                {
+                    SendPublicHistory(clientSocket);
+                    continue;
+                }
+
+                if (data.StartsWith("LOAD_PRIVATE:"))
+                {
+                    string target =data.Substring("LOAD_PRIVATE:".Length);
+                    string currentUser =clientNames[clientSocket];
+                    SendPrivateHistory(clientSocket,currentUser,target);
+                    continue;
+                }
+
+                foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
             {
                 string trimmed = line.Trim();
 
@@ -844,5 +861,64 @@ public partial class Form1 : Form
     private void label1_Click_1(object sender, EventArgs e)
     {
 
+    }
+    //dung them load tn
+    private void SendPublicHistory(Socket client)
+    {
+        if (_messageRepo == null)
+            return;
+
+        var service = new HistoryService(_messageRepo);
+
+        var list = service.LoadPublic();
+
+        if (list.Count == 0)
+        {
+            client.Send(
+                Encoding.UTF8.GetBytes(
+                    "HISTORY_EMPTY\n"));
+            return;
+        }
+
+        foreach (var msg in list)
+        {
+            string line =
+                $"HISTORY:[{msg.SentAt:HH:mm:ss}] {msg.Sender}: {msg.Content}\n";
+
+            client.Send(
+                Encoding.UTF8.GetBytes(line));
+        }
+    }
+    private void SendPrivateHistory(
+    Socket client,
+    string currentUser,
+    string targetUser)
+    {
+        if (_messageRepo == null)
+            return;
+
+        var service = new HistoryService(_messageRepo);
+
+        var list =
+            service.LoadPrivate(
+                currentUser,
+                targetUser);
+
+        if (list.Count == 0)
+        {
+            client.Send(
+                Encoding.UTF8.GetBytes(
+                    "HISTORY_EMPTY\n"));
+            return;
+        }
+
+        foreach (var msg in list)
+        {
+            string line =
+                $"HISTORY_PRIVATE:[{msg.SentAt:HH:mm:ss}] {msg.Sender}->{msg.Receiver}: {msg.Content}\n";
+
+            client.Send(
+                Encoding.UTF8.GetBytes(line));
+        }
     }
 }

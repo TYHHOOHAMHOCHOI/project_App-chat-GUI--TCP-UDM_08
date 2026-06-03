@@ -120,6 +120,21 @@ public partial class Form1 : Form
                 {
                     foreach (string line in msg.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                     {
+                        //duung them load tn
+                        if (line.StartsWith("HISTORY:")){AppendChat(line.Substring(8),Color.Blue);
+                            continue;
+                        }
+                        if (line.StartsWith("HISTORY_PRIVATE:"))
+                        {
+                            AppendChat(line.Substring(16),Color.DarkViolet);
+                            continue;
+                        }
+                        if (line.Trim() =="HISTORY_EMPTY")
+                        {
+                            AppendChat("[Hệ thống] Chưa có lịch sử tin nhắn.");
+                            continue;
+                        }
+
                         string trimmed = line.TrimEnd('\r');
                         if (string.IsNullOrEmpty(trimmed)) continue;
 
@@ -360,6 +375,27 @@ public partial class Form1 : Form
         _privateTarget = null;
         lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
         AppendChat("[Hệ thống] Đã chuyển sang chế độ nhắn chung.");
+
+    }
+    //dung them load tn
+    private void btnLoadHistory_Click(object sender,EventArgs e)
+    {
+        if (!isConnected)
+        {
+            MessageBox.Show(
+                "Chưa kết nối Server");
+            return;
+        }
+
+        if (_privateTarget == null)
+        {
+            SendRaw("LOAD_PUBLIC\n");
+        }
+        else
+        {
+            SendRaw(
+                $"LOAD_PRIVATE:{_privateTarget}\n");
+        }
     }
 
     private void SetConnectedState(bool connected)

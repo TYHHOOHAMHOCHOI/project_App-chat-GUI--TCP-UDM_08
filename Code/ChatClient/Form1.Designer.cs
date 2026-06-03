@@ -40,6 +40,7 @@ partial class Form1
         lblTitle = new Label();
         btnLogoutChat = new Button();
         btnPublic = new Button();
+        btnLoadHistory = new Button();
         ((System.ComponentModel.ISupportInitialize)dgvUsers).BeginInit();
         headerPanel.SuspendLayout();
         SuspendLayout();
@@ -316,6 +317,16 @@ partial class Form1
         btnPublic.Text = "nhắn chung";
         btnPublic.UseVisualStyleBackColor = true;
         btnPublic.Click += btnPublic_Click_1;
+
+        // dung them
+        // btnLoadHistory
+        //
+        btnLoadHistory.Location = new Point(1140, 845);
+        btnLoadHistory.Name = "btnLoadHistory";
+        btnLoadHistory.Size = new Size(170, 42);
+        btnLoadHistory.Text = "Load tin nhắn";
+        btnLoadHistory.UseVisualStyleBackColor = true;
+        btnLoadHistory.Click += btnLoadHistory_Click;
         // 
         // Form1
         // 
@@ -329,6 +340,7 @@ partial class Form1
         Controls.Add(txtMessage);
         Controls.Add(rtbChat);
         Controls.Add(btnLogoutChat);
+        Controls.Add(btnLoadHistory);
         Controls.Add(dgvUsers);
         Controls.Add(headerPanel);
         ForeColor = SystemColors.Window;
@@ -368,4 +380,5 @@ partial class Form1
     private DataGridViewTextBoxColumn colName;
     private DataGridViewTextBoxColumn colChat;
     private Button btnPublic;
+    private Button btnLoadHistory;
 }
