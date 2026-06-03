@@ -321,6 +321,7 @@ partial class Form1
         // dung them
         // btnLoadHistory
         //
+        btnLoadHistory.ForeColor = Color.Black;
         btnLoadHistory.Location = new Point(1140, 845);
         btnLoadHistory.Name = "btnLoadHistory";
         btnLoadHistory.Size = new Size(170, 42);
