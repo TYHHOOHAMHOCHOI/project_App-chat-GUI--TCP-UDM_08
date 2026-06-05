@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-
-namespace ChatClient
+﻿namespace ChatClient
 {
     public partial class Frmsign : Form
     {
@@ -40,6 +37,7 @@ namespace ChatClient
                 return;
             }
 
+            // Gọi hàm Register cơ bản, không có avatar
             if (AccountManager.Register(user, pass, out var message))
             {
                 MessageBox.Show(message, "Thành công",

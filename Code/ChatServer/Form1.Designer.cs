@@ -50,6 +50,7 @@ partial class Form1
         pictureBox1 = new PictureBox();
         label2 = new Label();
         dgvClients = new DataGridView();
+        colAvatar = new DataGridViewImageColumn();
         colID = new DataGridViewTextBoxColumn();
         colName = new DataGridViewTextBoxColumn();
         colKick = new DataGridViewButtonColumn();
@@ -250,7 +251,7 @@ partial class Form1
         dgvClients.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
         dgvClients.BackgroundColor = SystemColors.ButtonHighlight;
         dgvClients.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        dgvClients.Columns.AddRange(new DataGridViewColumn[] { colID, colName, colKick, colSend });
+        dgvClients.Columns.AddRange(new DataGridViewColumn[] { colAvatar, colID, colName, colKick, colSend });
         dgvClients.Location = new Point(639, 28);
         dgvClients.Name = "dgvClients";
         dgvClients.RowHeadersVisible = false;
@@ -391,6 +392,7 @@ partial class Form1
     private Label lblSoClient;
     private DataGridViewTextBoxColumn colID;
     private DataGridViewTextBoxColumn colName;
+    private DataGridViewImageColumn colAvatar;
     private DataGridViewButtonColumn colKick;
     private DataGridViewButtonColumn colSend;
     private Button button1;

@@ -17,6 +17,7 @@ public partial class Form1 : Form
     private int _nextUserId = 1;
     private string? _privateTarget = null;
     private readonly string _loggedInUser;
+    private Dictionary<string, string?> _userAvatars = new(); // Lưu avatar base64 của mỗi user
 
     public Form1(string loggedInUser)
     {
@@ -47,6 +48,84 @@ public partial class Form1 : Form
         dgvUsers.DefaultCellStyle.SelectionForeColor = Color.Black;
         conection.Click += conection_Click;
         unconection.Click += unconection_Click;
+
+        // Load user avatar and add click event
+        LoadUserAvatar();
+        pbUserAvatar.Click += pbUserAvatar_Click;
+        pbUserAvatar.Cursor = Cursors.Hand;
+    }
+
+    /// <summary>Loads and displays the logged-in user's avatar</summary>
+    private void LoadUserAvatar()
+    {
+        try
+        {
+            var avatarBase64 = AccountManager.GetAvatar(_loggedInUser);
+            if (!string.IsNullOrEmpty(avatarBase64))
+            {
+                var avatarImage = AccountManager.ConvertBase64ToImage(avatarBase64);
+                if (avatarImage != null)
+                {
+                    pbUserAvatar.Image = avatarImage;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Silently fail if avatar cannot be loaded
+            System.Diagnostics.Debug.WriteLine($"Error loading avatar: {ex.Message}");
+        }
+    }
+
+    /// <summary>Handles avatar picture box click to change avatar</summary>
+    private void pbUserAvatar_Click(object? sender, EventArgs e)
+    {
+        ChangeUserAvatar();
+    }
+
+    /// <summary>Opens dialog to select new avatar image</summary>
+    private void ChangeUserAvatar()
+    {
+        using var openFileDialog = new OpenFileDialog();
+        openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif|All Files|*.*";
+        openFileDialog.Title = "Chọn ảnh Avatar mới";
+
+        if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+        {
+            try
+            {
+                // Update avatar in AccountManager
+                if (AccountManager.SetAvatar(_loggedInUser, openFileDialog.FileName, out var message))
+                {
+                    // Reload and display the new avatar
+                    LoadUserAvatar();
+                    MessageBox.Show(message, "Thành công",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    AppendChat($"[Hệ thống] Avatar đã được cập nhật.", Color.Green);
+                }
+                else
+                {
+                    MessageBox.Show(message, "Lỗi",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+
+    /// <summary>Opens the Avatar Manager form</summary>
+    private void btnManageAvatar_Click(object? sender, EventArgs e)
+    {
+        using var avatarForm = new AvatarForm(_loggedInUser);
+        if (avatarForm.ShowDialog(this) == DialogResult.OK)
+        {
+            // Reload avatar after changes
+            LoadUserAvatar();
+        }
     }
 
     private void conection_Click(object? sender, EventArgs e)
@@ -203,7 +282,46 @@ public partial class Form1 : Form
                         }
 
                         // ── TIN NHẮN THƯỜNG (chung hoặc riêng từ người khác gửi đến) ──
-                        AppendChat(trimmed);
+                        // Parse sender name from message format "[HH:mm:ss] [SenderName]: message"
+                        string senderName = ExtractSenderFromMessage(trimmed);
+                        string messageText = ExtractMessageContent(trimmed);
+
+                        // Skip if this is our own message (already displayed in btnSend_Click)
+                        if (senderName == _loggedInUser)
+                        {
+                            // This is our own message echoed back from server, skip it
+                            continue;
+                        }
+
+                        // Get sender's avatar if available
+                        string? senderAvatarBase64 = null;
+                        if (!string.IsNullOrEmpty(senderName) && senderName != "[Hệ thống]")
+                        {
+                            // Try to get from cache first
+                            if (_userAvatars.TryGetValue(senderName, out var cachedAvatar))
+                            {
+                                senderAvatarBase64 = cachedAvatar;
+                            }
+                            else
+                            {
+                                // Try to get from AccountManager (if available on client)
+                                try
+                                {
+                                    senderAvatarBase64 = AccountManager.GetAvatar(senderName);
+                                    if (!string.IsNullOrEmpty(senderAvatarBase64))
+                                    {
+                                        _userAvatars[senderName] = senderAvatarBase64;
+                                    }
+                                }
+                                catch
+                                {
+                                    // Avatar not available
+                                }
+                            }
+                        }
+
+                        // Display as bubble (incoming message = left-aligned)
+                        AppendChatWithAvatar(senderName, messageText, false, senderAvatarBase64);
                         try { TryRegisterUserFromMessage(trimmed); } catch { }
                     }
                 });
@@ -228,17 +346,21 @@ public partial class Form1 : Form
 
         string timeStamp = DateTime.Now.ToString("HH:mm:ss");
 
+        // Get current user's avatar
+        var userAvatarBase64 = AccountManager.GetAvatar(_loggedInUser);
+
         if (_privateTarget != null)
         {
             // Gửi protocol PRIVATE: lên Server để Server định tuyến đúng người nhận
-            // Server KHÔNG broadcast → chỉ người nhận thấy, không bị lặp
             SendRaw($"PRIVATE:{_privateTarget}|{text}\n");
-            // Tự hiện phía mình gửi ngay, không cần chờ Server echo lại
-            AppendChat($"[{timeStamp}] [Gửi riêng] Bạn → {_privateTarget}: {text}", Color.DarkViolet);
+            // Hiển thị bubble của tin nhắn của bạn gửi (bên phải với avatar)
+            AppendChatWithAvatar(_loggedInUser, $"[Gửi riêng tới {_privateTarget}] {text}", true, userAvatarBase64);
         }
         else
         {
             SendRaw($"{text}\n");
+            // Hiển thị bubble của tin nhắn của bạn gửi (bên phải với avatar)
+            AppendChatWithAvatar(_loggedInUser, text, true, userAvatarBase64);
         }
 
         txtMessage.Clear();
@@ -321,6 +443,8 @@ public partial class Form1 : Form
         _userMap.Clear();
         _nextUserId = 1;
         _privateTarget = null;
+        chatBubblePanel.ClearMessages();
+        _userAvatars.Clear();
     }
 
     private void btnLogout_Click(object? sender, EventArgs e)
@@ -341,20 +465,28 @@ public partial class Form1 : Form
 
     private void AppendChat(string text, Color? color = null)
     {
-        if (rtbChat.InvokeRequired) { SafeInvoke(() => AppendChat(text, color)); return; }
-        rtbChat.SelectionStart = rtbChat.TextLength;
-        rtbChat.SelectionLength = 0;
-        if (color.HasValue)
-            rtbChat.SelectionColor = color.Value;
-        else if (text.Contains("[Gửi riêng]"))
-            rtbChat.SelectionColor = Color.HotPink;
-        else if (text.Contains("[Hệ thống]"))
-            rtbChat.SelectionColor = Color.Gray;
-        else
-            rtbChat.SelectionColor = Color.Black;
-        rtbChat.AppendText(text + "\r\n");
-        rtbChat.SelectionColor = Color.Black;
-        rtbChat.ScrollToCaret();
+        if (chatBubblePanel.InvokeRequired) { SafeInvoke(() => AppendChat(text, color)); return; }
+
+        // For system messages and special cases, just add text
+        chatBubblePanel.AddMessage("[Hệ thống]", text, DateTime.Now, false);
+    }
+
+    /// <summary>Append chat message with sender's avatar</summary>
+    private void AppendChatWithAvatar(string senderName, string messageText, bool isOwnMessage, string? avatarBase64 = null)
+    {
+        if (chatBubblePanel.InvokeRequired) 
+        { 
+            SafeInvoke(() => AppendChatWithAvatar(senderName, messageText, isOwnMessage, avatarBase64)); 
+            return; 
+        }
+
+        chatBubblePanel.AddMessage(senderName, messageText, DateTime.Now, isOwnMessage, avatarBase64);
+
+        // Store avatar for later reference
+        if (!string.IsNullOrEmpty(avatarBase64))
+        {
+            _userAvatars[senderName] = avatarBase64;
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -415,10 +547,87 @@ public partial class Form1 : Form
         if (InvokeRequired) Invoke(action); else action();
     }
 
+    /// <summary>Extracts sender name from message format "[HH:mm:ss] [SenderName]: message"</summary>
+    private string ExtractSenderFromMessage(string message)
+    {
+        // Format: "[HH:mm:ss] [SenderName]: message" or "[HH:mm:ss] SenderName: message"
+        try
+        {
+            // Remove timestamp at the beginning "[HH:mm:ss]"
+            int firstBracketEnd = message.IndexOf(']');
+            if (firstBracketEnd < 0) return "Unknown";
+
+            string afterTimestamp = message.Substring(firstBracketEnd + 1).TrimStart();
+
+            // Try to extract bracketed sender: "[SenderName]"
+            if (afterTimestamp.StartsWith("["))
+            {
+                int closeBracket = afterTimestamp.IndexOf(']');
+                if (closeBracket > 0)
+                {
+                    return afterTimestamp.Substring(1, closeBracket - 1).Trim();
+                }
+            }
+
+            // Or extract unbracketed sender: "SenderName:"
+            int colonIdx = afterTimestamp.IndexOf(':');
+            if (colonIdx > 0)
+            {
+                return afterTimestamp.Substring(0, colonIdx).Trim();
+            }
+
+            return "Unknown";
+        }
+        catch
+        {
+            return "Unknown";
+        }
+    }
+
+    /// <summary>Extracts message content from message format "[HH:mm:ss] [SenderName]: message"</summary>
+    private string ExtractMessageContent(string message)
+    {
+        // Format: "[HH:mm:ss] [SenderName]: message" or "[HH:mm:ss] SenderName: message"
+        try
+        {
+            // Remove timestamp "[HH:mm:ss]"
+            int firstBracketEnd = message.IndexOf(']');
+            if (firstBracketEnd < 0) return message;
+
+            string afterTimestamp = message.Substring(firstBracketEnd + 1).TrimStart();
+
+            // Try bracketed format: "[SenderName]: message"
+            if (afterTimestamp.StartsWith("["))
+            {
+                int closeBracket = afterTimestamp.IndexOf(']');
+                if (closeBracket > 0)
+                {
+                    int colonIdx = afterTimestamp.IndexOf(':', closeBracket);
+                    if (colonIdx >= 0)
+                    {
+                        return afterTimestamp.Substring(colonIdx + 1).TrimStart();
+                    }
+                }
+            }
+
+            // Try unbracketed format: "SenderName: message"
+            int colonIdx2 = afterTimestamp.IndexOf(':');
+            if (colonIdx2 > 0)
+            {
+                return afterTimestamp.Substring(colonIdx2 + 1).TrimStart();
+            }
+
+            return afterTimestamp;
+        }
+        catch
+        {
+            return message;
+        }
+    }
+
     private void txtkey_TextChanged(object? sender, EventArgs e) { }
     private void txtUsername_TextChanged(object? sender, EventArgs e) { }
     private void label1_Click(object? sender, EventArgs e) { }
-    private void rtbChat_TextChanged(object? sender, EventArgs e) { }
     private void headerPanel_Paint(object sender, PaintEventArgs e) { }
 
 
