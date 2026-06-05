@@ -28,6 +28,7 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
+        txtSearchUser = new TextBox();
         btnLoadPublic = new Button();
         btnLoadPrivate = new Button();
 
@@ -75,6 +76,11 @@ partial class Form1
         btnLoadPrivate.Size = new Size(120, 30);
         btnLoadPrivate.Text = "Load Riêng";
         btnLoadPrivate.Click += btnLoadPrivate_Click;
+
+        txtSearchUser.Location = new Point(270, 126);
+        txtSearchUser.Name = "txtSearchUser";
+        txtSearchUser.Size = new Size(120, 27);
+        txtSearchUser.PlaceholderText = "Tên người dùng";
 
         // 
         // btnOpenServer
@@ -359,6 +365,7 @@ partial class Form1
 
         Controls.Add(btnLoadPublic);
         Controls.Add(btnLoadPrivate);
+        Controls.Add(txtSearchUser);
 
 
         Name = "Form1";
@@ -400,4 +407,5 @@ partial class Form1
 
     private Button btnLoadPublic;
     private Button btnLoadPrivate;
+    private TextBox txtSearchUser;
 }
