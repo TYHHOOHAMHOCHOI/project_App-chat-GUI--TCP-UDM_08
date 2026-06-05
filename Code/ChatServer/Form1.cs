@@ -262,7 +262,7 @@ public partial class Form1 : Form
 
                     // Thêm một dòng mới vào bảng DataGridView, gắn Tag = socket để tìm lại
                     //int index = dgvClients.Rows.Add();
-                   // dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
+                    // dgvClients.Rows[index].Cells["colID"].Value = listClientOnline.Count;
                     //dgvClients.Rows[index].Cells["colName"].Value = clientEndPoint; // Tạm hiện IP, đổi thành Username khi nhận LOGIN
                     //dgvClients.Rows[index].Tag = clientSocket;
                 });
@@ -290,16 +290,15 @@ public partial class Form1 : Form
     /// <summary>
     /// Luồng ngầm chạy riêng cho mỗi client: nhận lệnh LOGIN và phát hiện ngắt kết nối.
     /// </summary>
-   private void HandleClient(Socket clientSocket)
-{
-    byte[] buffer = new byte[4096];
-    string clientName = "Unknown";
-    bool isFirstLogin = true;
-
-    try
+    private void HandleClient(Socket clientSocket)
     {
-        while (isRunning && clientSocket.Connected)
+        byte[] buffer = new byte[4096];
+        string clientName = "Unknown";
+        bool isFirstLogin = true;
+
+        try
         {
+<<<<<<< Updated upstream
             int received = clientSocket.Receive(buffer);
             if (received <= 0) break;
 
@@ -323,31 +322,47 @@ public partial class Form1 : Form
                 }
 
                 foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+=======
+            while (isRunning && clientSocket.Connected)
+>>>>>>> Stashed changes
             {
-                string trimmed = line.Trim();
+                int received = clientSocket.Receive(buffer);
+                if (received <= 0) break;
 
-                // Trường hợp 1: Nhận gói LOGIN từ máy con
-                if (trimmed.StartsWith("LOGIN:", StringComparison.OrdinalIgnoreCase))
+                string data = Encoding.UTF8.GetString(buffer, 0, received);
+
+                //dung them load tn
+                data = data.Trim();
+
+                if (data == "LOAD_PUBLIC")
                 {
-                    string rawLoginData = trimmed.Substring(6).Trim(); // Cắt bỏ "LOGIN:"
-                    
-                    string username = rawLoginData;
-                    string clientKey = "";
+                    _messageRepo.SaveMessage(clientName, null, data, "public");
+                    SendPublicHistory(clientSocket);
+                    continue;
+                }
 
-                    // SỬA TẠI ĐÂY: Tách chuỗi theo ký tự '|' để lấy Username và Key bảo mật
-                    if (rawLoginData.Contains("|"))
+                if (data.StartsWith("LOAD_PRIVATE:"))
+                {
+                    string target = data.Substring("LOAD_PRIVATE:".Length);
+                    string currentUser = clientNames[clientSocket];
+                    //_messageRepo.SaveMessage(sender, receiver, content, "private");
+                    SendPrivateHistory(clientSocket, currentUser, target);
+                    continue;
+                }
+
+                foreach (string line in data.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    string trimmed = line.Trim();
+
+                    // Trường hợp 1: Nhận gói LOGIN từ máy con
+                    if (trimmed.StartsWith("LOGIN:", StringComparison.OrdinalIgnoreCase))
                     {
-                        string[] parts = rawLoginData.Split('|');
-                        username = parts[0].Trim();
-                        if (parts.Length > 1) clientKey = parts[1].Trim();
-                    }
+                        string rawLoginData = trimmed.Substring(6).Trim(); // Cắt bỏ "LOGIN:"
 
-                    // Lấy Key đang được cấu hình hiện tại trên giao diện Server công khai
-                    string serverKey = "";
-                    this.Invoke((MethodInvoker)delegate {
-                        serverKey = txtKey.Text.Trim();
-                    });
+                        string username = rawLoginData;
+                        string clientKey = "";
 
+<<<<<<< Updated upstream
                         // TIẾN HÀNH KIỂM TRA KEY BẢO MẬT
                         if (clientKey != serverKey)
                         {
@@ -385,7 +400,60 @@ public partial class Form1 : Form
                         lock (clientNames) { clientNames[clientSocket] = username; }
 
                         if (isFirstLogin)
+=======
+                        // SỬA TẠI ĐÂY: Tách chuỗi theo ký tự '|' để lấy Username và Key bảo mật
+                        if (rawLoginData.Contains("|"))
+>>>>>>> Stashed changes
                         {
+                            string[] parts = rawLoginData.Split('|');
+                            username = parts[0].Trim();
+                            if (parts.Length > 1) clientKey = parts[1].Trim();
+                        }
+
+                        // Lấy Key đang được cấu hình hiện tại trên giao diện Server công khai
+                        string serverKey = "";
+                        this.Invoke((MethodInvoker)delegate {
+                            serverKey = txtKey.Text.Trim();
+                        });
+
+                        // TIẾN HÀNH KIỂM TRA KEY BẢO MẬT
+                        if (clientKey != serverKey)
+                        {
+                            // 1. Gửi gói lệnh ERR_KEY kèm theo dấu ngắt dòng rõ ràng để Client xử lý chuẩn
+                            string errorResponse = "ERR_KEY: Mã khóa bảo mật (Key) không chính xác! Vui lòng kiểm tra lại.\n";
+                            byte[] errData = Encoding.UTF8.GetBytes(errorResponse);
+                            clientSocket.Send(errData);
+
+                            // 2. Ghi log cảnh báo sai Key lên Server
+                            this.Invoke((MethodInvoker)delegate {
+                                rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Cảnh báo] Từ chối kết nối từ IP {((IPEndPoint)clientSocket.RemoteEndPoint).Address} do nhập sai mật mã Key.\r\n");
+                            });
+
+                            // 3. Trước khi dứt áo ra đi, đóng Socket ngay tại đây để bên Client lập tức nhận biết và KHÔNG báo "đã kết nối" nữa
+                            try
+                            {
+                                clientSocket.Shutdown(SocketShutdown.Both);
+                                clientSocket.Close();
+                            }
+                            catch { }
+
+                            // 4. Đồng thời xóa Socket này ra khỏi listClientOnline ngay để tránh việc rơi vào khối finally chạy hàm RemoveClient làm rác log "Unknown"
+                            lock (listClientOnline)
+                            {
+                                listClientOnline.Remove(clientSocket);
+                            }
+
+                            return; // Thoát hẳn luồng xử lý đơn này luôn
+                        }
+
+                        // --- NẾU ĐÚNG KEY, TIẾP TỤC XỬ LÝ ĐĂNG NHẬP NHƯ CŨ ---
+                        if (!string.IsNullOrEmpty(username))
+                        {
+                            clientName = username;
+                            lock (clientNames) { clientNames[clientSocket] = username; }
+
+                            if (isFirstLogin)
+                            {
                                 string okMsg = $"OK: Kết nối thành công!\n";
                                 clientSocket.Send(Encoding.UTF8.GetBytes(okMsg));
 
@@ -427,6 +495,7 @@ public partial class Form1 : Form
 
 
                                 string clientIP = ((IPEndPoint)clientSocket.RemoteEndPoint).Address.ToString();
+<<<<<<< Updated upstream
                             this.Invoke((MethodInvoker)delegate
                             {
                                 rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã kết nối với IP {clientIP}\r\n");
@@ -451,6 +520,32 @@ public partial class Form1 : Form
                         }
                     }
                 }
+=======
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] {clientName} đã kết nối với IP {clientIP}\r\n");
+
+                                    // Lưu tin hệ thống: kết nối
+                                    try { _messageRepo?.SaveMessage("Hệ thống", null, $"{clientName} đã kết nối (IP: {clientIP})", "system"); } catch { }
+
+                                    int index = dgvClients.Rows.Add();
+                                    dgvClients.Rows[index].Cells["colName"].Value = clientName;
+                                    dgvClients.Rows[index].Tag = clientSocket;
+
+                                    for (int i = 0; i < dgvClients.Rows.Count; i++)
+                                    {
+                                        dgvClients.Rows[i].Cells["colID"].Value = i + 1;
+                                    }
+                                });
+                                isFirstLogin = false;
+                            }
+                            else
+                            {
+                                UpdateClientNameOnGrid(clientSocket, username);
+                            }
+                        }
+                    }
+>>>>>>> Stashed changes
                     // Trường hợp 2: Client chat chung
                     else if (trimmed.StartsWith("PRIVATE:", StringComparison.OrdinalIgnoreCase))
                     {
@@ -521,13 +616,12 @@ public partial class Form1 : Form
                     }
                 }
         }
+        catch { }
+        finally
+        {
+            RemoveClient(clientSocket, clientName);
+        }
     }
-    catch { }
-    finally
-    {
-        RemoveClient(clientSocket, clientName);
-    }
-}
 
     /// <summary>
     /// Cập nhật tên username thật lên DataGridView khi nhận được LOGIN.
@@ -652,6 +746,7 @@ public partial class Form1 : Form
             lock (clientNames) { clientNames.Clear(); }
             dgvClients.Rows.Clear();
 
+<<<<<<< Updated upstream
             
             rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Đã ngắt kết nối của toàn bộ Client. Máy chủ vẫn đang tiếp tục hoạt động...\r\n");
 
@@ -660,6 +755,16 @@ public partial class Form1 : Form
 
            
             btnDisconectAll.Enabled = false; 
+=======
+
+            rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Hệ thống] Đã ngắt kết nối của toàn bộ Client. Máy chủ vẫn đang tiếp tục hoạt động...\r\n");
+
+
+            lblSoClient.Text = "Số client: 0";
+
+
+            btnDisconectAll.Enabled = false;
+>>>>>>> Stashed changes
         }
         catch (Exception ex)
         {
@@ -862,7 +967,11 @@ public partial class Form1 : Form
     {
 
     }
+<<<<<<< Updated upstream
     //dung them load tn
+=======
+    ///dung them load tn
+>>>>>>> Stashed changes
     private void SendPublicHistory(Socket client)
     {
         if (_messageRepo == null)
@@ -921,4 +1030,58 @@ public partial class Form1 : Form
                 Encoding.UTF8.GetBytes(line));
         }
     }
+<<<<<<< Updated upstream
+=======
+    private void btnLoadPublic_Click(object sender, EventArgs e)
+    {
+        if (_messageRepo == null)
+        {
+            MessageBox.Show("Server chưa mở!");
+            return;
+        }
+
+        var list = _messageRepo.GetPublicMessages(200);
+
+        rtbLog.Clear();
+
+        if (list.Count == 0)
+        {
+            rtbLog.AppendText("Chưa có lịch sử chat chung.\r\n");
+            return;
+        }
+
+        foreach (var data in list)
+        {
+            rtbLog.AppendText(
+                $"[CHUNG] [{data.SentAt:HH:mm:ss}] {data.Sender}: {data.Content}\r\n");
+        }
+    }
+    private void btnLoadPrivate_Click(object sender, EventArgs e)
+    {
+        if (_messageRepo == null)
+        {
+            MessageBox.Show("Server chưa mở!");
+            return;
+        }
+
+        var list = _messageRepo.GetPrivateMessages(200);
+
+        rtbLog.Clear();
+
+        if (list.Count == 0)
+        {
+            rtbLog.AppendText("Chưa có lịch sử chat riêng.\r\n");
+            return;
+        }
+
+        foreach (var data in list)
+        {
+            rtbLog.AppendText(
+                $"[RIÊNG] [{data.SentAt:HH:mm:ss}] {data.Sender} -> {data.Receiver}: {data.Content}\r\n");
+        }
+    }
+
+
+
+>>>>>>> Stashed changes
 }

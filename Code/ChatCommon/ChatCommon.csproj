@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+<<<<<<< Updated upstream
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.*" />
+=======
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
+>>>>>>> Stashed changes
   </ItemGroup>
 
 </Project>
