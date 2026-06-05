@@ -955,13 +955,23 @@ public partial class Form1 : Form
             return;
         }
 
+        string keyword = txtSearchUser.Text.Trim();
+
         var list = _messageRepo.GetPrivateMessages(200);
+
+        if (!string.IsNullOrEmpty(keyword))
+        {
+            list = list.Where(x =>
+                (x.Sender != null && x.Sender.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                (x.Receiver != null && x.Receiver.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+        }
 
         rtbLog.Clear();
 
         if (list.Count == 0)
         {
-            rtbLog.AppendText("Chưa có lịch sử chat riêng.\r\n");
+            rtbLog.AppendText("Không tìm thấy tin nhắn riêng.\r\n");
             return;
         }
 
