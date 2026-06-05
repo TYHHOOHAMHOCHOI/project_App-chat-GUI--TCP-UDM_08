@@ -19,7 +19,7 @@ namespace ChatCommon
 
             // Cấu trúc: [4 bytes độ dài] + [Nội dung JSON]
             var lengthBytes = BitConverter.GetBytes(bodyBytes.Length);
-            
+
             var finalPacket = new byte[lengthBytes.Length + bodyBytes.Length];
             Buffer.BlockCopy(lengthBytes, 0, finalPacket, 0, lengthBytes.Length);
             Buffer.BlockCopy(bodyBytes, 0, finalPacket, lengthBytes.Length, bodyBytes.Length);
@@ -58,9 +58,9 @@ namespace ChatCommon
             }
 
             int bodyLength = BitConverter.ToInt32(lengthBuffer, 0);
-            
+
             // Giới hạn chống tràn bộ nhớ (Max 15MB để dự phòng cho Base64 encoding của 10MB file + overhead)
-            if (bodyLength <= 0 || bodyLength > 15 * 1024 * 1024) 
+            if (bodyLength <= 0 || bodyLength > 15 * 1024 * 1024)
             {
                 return null; // Gói tin bất thường
             }
