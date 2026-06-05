@@ -28,6 +28,9 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
+        btnLoadPublic = new Button();
+        btnLoadPrivate = new Button();
+
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
         btnOpenServer = new Button();
         btnClear = new Button();
@@ -57,6 +60,22 @@ partial class Form1
         ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
         ((System.ComponentModel.ISupportInitialize)dgvClients).BeginInit();
         SuspendLayout();
+
+        //
+        //load chat
+        //
+        // Load chat chung
+        btnLoadPublic.Location = new Point(140, 156);
+        btnLoadPublic.Size = new Size(120, 30);
+        btnLoadPublic.Text = "Load Chung";
+        btnLoadPublic.Click += btnLoadPublic_Click;
+
+        // Load chat riêng
+        btnLoadPrivate.Location = new Point(270, 156);
+        btnLoadPrivate.Size = new Size(120, 30);
+        btnLoadPrivate.Text = "Load Riêng";
+        btnLoadPrivate.Click += btnLoadPrivate_Click;
+
         // 
         // btnOpenServer
         // 
@@ -337,6 +356,11 @@ partial class Form1
         Controls.Add(lableUsername);
         Controls.Add(btnClear);
         Controls.Add(btnOpenServer);
+
+        Controls.Add(btnLoadPublic);
+        Controls.Add(btnLoadPrivate);
+
+
         Name = "Form1";
         Text = "Server";
         Load += Form1_Load;
@@ -372,4 +396,8 @@ partial class Form1
     private Button button1;
     private Button btnOpenServer;
     private CheckBox checkBox1;
+
+
+    private Button btnLoadPublic;
+    private Button btnLoadPrivate;
 }

@@ -310,6 +310,7 @@ public partial class Form1 : Form
 
                 if (data == "LOAD_PUBLIC")
                 {
+                    _messageRepo.SaveMessage(clientName,null,data,"public");
                     SendPublicHistory(clientSocket);
                     continue;
                 }
@@ -318,6 +319,7 @@ public partial class Form1 : Form
                 {
                     string target =data.Substring("LOAD_PRIVATE:".Length);
                     string currentUser =clientNames[clientSocket];
+                    //_messageRepo.SaveMessage(sender, receiver, content, "private");
                     SendPrivateHistory(clientSocket,currentUser,target);
                     continue;
                 }
@@ -921,4 +923,55 @@ public partial class Form1 : Form
                 Encoding.UTF8.GetBytes(line));
         }
     }
+    private void btnLoadPublic_Click(object sender, EventArgs e)
+    {
+        if (_messageRepo == null)
+        {
+            MessageBox.Show("Server chưa mở!");
+            return;
+        }
+
+        var list = _messageRepo.GetPublicMessages(200);
+
+        rtbLog.Clear();
+
+        if (list.Count == 0)
+        {
+            rtbLog.AppendText("Chưa có lịch sử chat chung.\r\n");
+            return;
+        }
+
+        foreach (var data in list)
+        {
+            rtbLog.AppendText(
+                $"[CHUNG] [{data.SentAt:HH:mm:ss}] {data.Sender}: {data.Content}\r\n");
+        }
+    }
+    private void btnLoadPrivate_Click(object sender, EventArgs e)
+{
+    if (_messageRepo == null)
+    {
+        MessageBox.Show("Server chưa mở!");
+        return;
+    }
+
+    var list = _messageRepo.GetPrivateMessages(200);
+
+    rtbLog.Clear();
+
+    if (list.Count == 0)
+    {
+        rtbLog.AppendText("Chưa có lịch sử chat riêng.\r\n");
+        return;
+    }
+
+    foreach (var data in list)
+    {
+        rtbLog.AppendText(
+            $"[RIÊNG] [{data.SentAt:HH:mm:ss}] {data.Sender} -> {data.Receiver}: {data.Content}\r\n");
+    }
+}
+
+   
+
 }

@@ -101,33 +101,20 @@ namespace ChatCommon
         /// </summary>
         /// <param name="count">Số tin nhắn tối đa.</param>
         public List<ChatMessage> GetPublicMessages(int count = 50)
-        {            
-            var list = new List<ChatMessage>();
-            using var conn = new SQLiteConnection(_connectionString);
+        {
+        using var cmd = _conn.CreateCommand();
 
-            conn.Open();
+        cmd.CommandText = @"
+        SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+        FROM ChatMessages
+        WHERE MessageType = 'public'
+        ORDER BY SentAt DESC
+        LIMIT @count
+        ";
 
-            string sql =@"SELECT * FROM Messages WHERE MessageType='public'ORDER BY SentAt DESC LIMIT @count";
+            cmd.Parameters.AddWithValue("@count", count);
 
-            using var cmd =new SQLiteCommand(sql, conn);
-
-            cmd.Parameters.AddWithValue("@count",count);
-
-            using var reader = cmd.ExecuteReader();
-
-            while (reader.Read())
-            {
-                list.Add(new ChatMessage
-                {
-                    Sender =reader["Sender"].ToString(),
-                    Receiver =reader["Receiver"].ToString(),
-                    Content =reader["Content"].ToString(),
-                    MessageType =reader["MessageType"].ToString(),
-                    SentAt =DateTime.Parse(reader["SentAt"].ToString())});
-            }
-            list.Reverse();
-            return list;
-        }
+            return ReadMessages(cmd);
         }
 
         /// <summary>
@@ -136,17 +123,64 @@ namespace ChatCommon
         /// </summary>
         /// <param name="username">Username cần lấy.</param>
         /// <param name="count">Số tin nhắn tối đa.</param>
-        public List<ChatMessage> GetPrivateMessages(string username, int count = 50)
+        public List<ChatMessage> GetPrivateMessages(int count = 100)
         {
             using var cmd = _conn.CreateCommand();
+
             cmd.CommandText = @"
-                SELECT Id, Sender, Receiver, Content, MessageType, SentAt
-                FROM ChatMessages
-                WHERE MessageType = 'private' AND (Sender = @user OR Receiver = @user)
-                ORDER BY SentAt DESC
-                LIMIT @count
-            ";
+            SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+            FROM ChatMessages
+            WHERE MessageType='private'
+            ORDER BY SentAt DESC
+            LIMIT @count";
+
+            cmd.Parameters.AddWithValue("@count", count);
+
+            return ReadMessages(cmd);
+        }
+
+        public List<ChatMessage> GetPrivateMessages(
+        string username,
+        int count = 50)
+        {
+            using var cmd = _conn.CreateCommand();
+
+            cmd.CommandText = @"
+            SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+            FROM ChatMessages
+            WHERE MessageType='private'
+            AND (Sender=@user OR Receiver=@user)
+            ORDER BY SentAt DESC
+            LIMIT @count";
+
             cmd.Parameters.AddWithValue("@user", username);
+            cmd.Parameters.AddWithValue("@count", count);
+
+            return ReadMessages(cmd);
+        }
+
+
+        public List<ChatMessage> GetPrivateMessagesBetween(string user1,string user2,int count = 100)
+        {
+            using var cmd = _conn.CreateCommand();
+
+            cmd.CommandText = @"
+            SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+            FROM ChatMessages
+            WHERE MessageType='private'
+            AND
+            (
+                (Sender=@u1 AND Receiver=@u2)
+                OR
+                (Sender=@u2 AND Receiver=@u1)
+            )
+            ORDER BY SentAt DESC
+            LIMIT @count";
+
+            cmd.Parameters.AddWithValue("@u1", user1);
+            cmd.Parameters.AddWithValue("@u2", user2);
+            cmd.Parameters.AddWithValue("@count", count);
+
             return ReadMessages(cmd);
         }
 
