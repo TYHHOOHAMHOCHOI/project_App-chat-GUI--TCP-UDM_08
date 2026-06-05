@@ -69,7 +69,7 @@ partial class Form1
         btnLoadPublic.Size = new Size(120, 30);
         btnLoadPublic.Text = "Load Chung";
         btnLoadPublic.Click += btnLoadPublic_Click;
-
+        //
         // Load chat riêng
         btnLoadPrivate.Location = new Point(270, 156);
         btnLoadPrivate.Size = new Size(120, 30);

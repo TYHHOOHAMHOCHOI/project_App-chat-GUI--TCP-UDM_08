@@ -204,7 +204,7 @@ namespace ChatCommon
         }
 
         // ═══════════════════════════════════════════════════════════════
-        //  HELPER
+        //  HELPERR
         // ═══════════════════════════════════════════════════════════════
 
         private static List<ChatMessage> ReadMessages(SqliteCommand cmd)

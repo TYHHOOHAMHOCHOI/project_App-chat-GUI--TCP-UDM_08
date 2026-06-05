@@ -864,7 +864,7 @@ public partial class Form1 : Form
     {
 
     }
-    //dung them load tn
+    ///dung them load tn
     private void SendPublicHistory(Socket client)
     {
         if (_messageRepo == null)
