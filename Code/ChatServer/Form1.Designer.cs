@@ -28,6 +28,10 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
+        txtSearchUser = new TextBox();
+        btnLoadPublic = new Button();
+        btnLoadPrivate = new Button();
+
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
         btnOpenServer = new Button();
         btnClear = new Button();
@@ -47,6 +51,7 @@ partial class Form1
         pictureBox1 = new PictureBox();
         label2 = new Label();
         dgvClients = new DataGridView();
+        colAvatar = new DataGridViewImageColumn();
         colID = new DataGridViewTextBoxColumn();
         colName = new DataGridViewTextBoxColumn();
         colKick = new DataGridViewButtonColumn();
@@ -57,6 +62,27 @@ partial class Form1
         ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
         ((System.ComponentModel.ISupportInitialize)dgvClients).BeginInit();
         SuspendLayout();
+
+        //
+        //load chat
+        //
+        // Load chat chung
+        btnLoadPublic.Location = new Point(140, 156);
+        btnLoadPublic.Size = new Size(120, 30);
+        btnLoadPublic.Text = "Load Chung";
+        btnLoadPublic.Click += btnLoadPublic_Click;
+        //
+        // Load chat riêng
+        btnLoadPrivate.Location = new Point(270, 156);
+        btnLoadPrivate.Size = new Size(120, 30);
+        btnLoadPrivate.Text = "Load Riêng";
+        btnLoadPrivate.Click += btnLoadPrivate_Click;
+
+        txtSearchUser.Location = new Point(270, 126);
+        txtSearchUser.Name = "txtSearchUser";
+        txtSearchUser.Size = new Size(120, 27);
+        txtSearchUser.PlaceholderText = "Tên người dùng";
+
         // 
         // btnOpenServer
         // 
@@ -231,7 +257,7 @@ partial class Form1
         dgvClients.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
         dgvClients.BackgroundColor = SystemColors.ButtonHighlight;
         dgvClients.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        dgvClients.Columns.AddRange(new DataGridViewColumn[] { colID, colName, colKick, colSend });
+        dgvClients.Columns.AddRange(new DataGridViewColumn[] { colAvatar, colID, colName, colKick, colSend });
         dgvClients.Location = new Point(639, 28);
         dgvClients.Name = "dgvClients";
         dgvClients.RowHeadersVisible = false;
@@ -337,6 +363,12 @@ partial class Form1
         Controls.Add(lableUsername);
         Controls.Add(btnClear);
         Controls.Add(btnOpenServer);
+
+        Controls.Add(btnLoadPublic);
+        Controls.Add(btnLoadPrivate);
+        Controls.Add(txtSearchUser);
+
+
         Name = "Form1";
         Text = "Server";
         Load += Form1_Load;
@@ -367,9 +399,15 @@ partial class Form1
     private Label lblSoClient;
     private DataGridViewTextBoxColumn colID;
     private DataGridViewTextBoxColumn colName;
+    private DataGridViewImageColumn colAvatar;
     private DataGridViewButtonColumn colKick;
     private DataGridViewButtonColumn colSend;
     private Button button1;
     private Button btnOpenServer;
     private CheckBox checkBox1;
+
+
+    private Button btnLoadPublic;
+    private Button btnLoadPrivate;
+    private TextBox txtSearchUser;
 }
