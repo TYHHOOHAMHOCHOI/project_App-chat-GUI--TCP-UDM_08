@@ -4,12 +4,12 @@ using System.Windows.Forms;
 
 namespace ChatClient
 {
-    public partial class AvatarForm : Form
+    public partial class Frmavatar : Form
     {
         private readonly string _username;
         private string? _selectedAvatarPath;
 
-        public AvatarForm(string username)
+        public Frmavatar(string username)
         {
             InitializeComponent();
             _username = username;
