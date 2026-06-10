@@ -30,8 +30,6 @@
         {
             panel1 = new Panel();
             panel3 = new Panel();
-            textBox1 = new TextBox();
-            label6 = new Label();
             label5 = new Label();
             label4 = new Label();
             reusername = new TextBox();
@@ -54,16 +52,13 @@
             panel1.BackColor = Color.Gainsboro;
             panel1.Controls.Add(panel3);
             panel1.Controls.Add(panel2);
-            panel1.Location = new Point(103, 80);
-            panel1.Margin = new Padding(2);
+            panel1.Location = new Point(167, 128);
             panel1.Name = "panel1";
-            panel1.Size = new Size(598, 315);
+            panel1.Size = new Size(972, 504);
             panel1.TabIndex = 0;
             // 
             // panel3
             // 
-            panel3.Controls.Add(textBox1);
-            panel3.Controls.Add(label6);
             panel3.Controls.Add(label5);
             panel3.Controls.Add(label4);
             panel3.Controls.Add(reusername);
@@ -74,31 +69,10 @@
             panel3.Controls.Add(label2);
             panel3.Controls.Add(label1);
             panel3.Dock = DockStyle.Right;
-            panel3.Location = new Point(288, 0);
-            panel3.Margin = new Padding(2);
+            panel3.Location = new Point(468, 0);
             panel3.Name = "panel3";
-            panel3.Size = new Size(310, 315);
+            panel3.Size = new Size(504, 504);
             panel3.TabIndex = 1;
-            // 
-            // textBox1
-            // 
-            textBox1.Location = new Point(28, 88);
-            textBox1.Margin = new Padding(2);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(264, 27);
-            textBox1.TabIndex = 11;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label6.ForeColor = Color.Blue;
-            label6.Location = new Point(28, 61);
-            label6.Margin = new Padding(2, 0, 2, 0);
-            label6.Name = "label6";
-            label6.Size = new Size(70, 22);
-            label6.TabIndex = 10;
-            label6.Text = "Email";
             // 
             // label5
             // 
@@ -106,10 +80,9 @@
             label5.BackColor = Color.Gainsboro;
             label5.Font = new Font("Courier New", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label5.ForeColor = Color.FromArgb(0, 0, 192);
-            label5.Location = new Point(193, 279);
-            label5.Margin = new Padding(2, 0, 2, 0);
+            label5.Location = new Point(314, 446);
             label5.Name = "label5";
-            label5.Size = new Size(89, 17);
+            label5.Size = new Size(138, 27);
             label5.TabIndex = 9;
             label5.Text = "Đăng nhập";
             label5.Click += label5_Click;
@@ -119,54 +92,45 @@
             label4.AutoSize = true;
             label4.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.Black;
-            label4.Location = new Point(44, 279);
-            label4.Margin = new Padding(2, 0, 2, 0);
+            label4.Location = new Point(72, 446);
             label4.Name = "label4";
-            label4.Size = new Size(152, 17);
+            label4.Size = new Size(236, 27);
             label4.TabIndex = 8;
             label4.Text = "Đã có tài khoản?";
-            label4.Click += label4_Click_1;
             // 
             // reusername
             // 
-            reusername.Location = new Point(28, 32);
-            reusername.Margin = new Padding(2);
+            reusername.Location = new Point(46, 108);
             reusername.Name = "reusername";
-            reusername.Size = new Size(264, 27);
+            reusername.Size = new Size(426, 39);
             reusername.TabIndex = 2;
-            reusername.TextChanged += textBox1_TextChanged;
             // 
             // recopassword
             // 
-            recopassword.Location = new Point(28, 204);
-            recopassword.Margin = new Padding(2);
+            recopassword.Location = new Point(46, 326);
             recopassword.Name = "recopassword";
-            recopassword.Size = new Size(264, 27);
+            recopassword.Size = new Size(426, 39);
             recopassword.TabIndex = 7;
-            recopassword.TextChanged += textBox3_TextChanged;
             // 
             // label3
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.Blue;
-            label3.Location = new Point(28, 176);
-            label3.Margin = new Padding(2, 0, 2, 0);
+            label3.Location = new Point(46, 272);
             label3.Name = "label3";
-            label3.Size = new Size(202, 22);
+            label3.Size = new Size(319, 36);
             label3.TabIndex = 6;
             label3.Text = "Confirm password";
-            label3.Click += label3_Click;
             // 
             // register
             // 
             register.BackColor = Color.FromArgb(128, 128, 255);
             register.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             register.ForeColor = SystemColors.ButtonHighlight;
-            register.Location = new Point(28, 239);
-            register.Margin = new Padding(2);
+            register.Location = new Point(46, 382);
             register.Name = "register";
-            register.Size = new Size(263, 30);
+            register.Size = new Size(427, 48);
             register.TabIndex = 4;
             register.Text = "Đăng ký";
             register.UseVisualStyleBackColor = false;
@@ -174,10 +138,9 @@
             // 
             // repassword
             // 
-            repassword.Location = new Point(28, 146);
-            repassword.Margin = new Padding(2);
+            repassword.Location = new Point(46, 209);
             repassword.Name = "repassword";
-            repassword.Size = new Size(264, 27);
+            repassword.Size = new Size(426, 39);
             repassword.TabIndex = 3;
             // 
             // label2
@@ -185,35 +148,30 @@
             label2.AutoSize = true;
             label2.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.Blue;
-            label2.Location = new Point(28, 120);
-            label2.Margin = new Padding(2, 0, 2, 0);
+            label2.Location = new Point(46, 167);
             label2.Name = "label2";
-            label2.Size = new Size(106, 22);
+            label2.Size = new Size(167, 36);
             label2.TabIndex = 1;
             label2.Text = "Password";
-            label2.Click += label2_Click;
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.Blue;
-            label1.Location = new Point(28, 6);
-            label1.Margin = new Padding(2, 0, 2, 0);
+            label1.Location = new Point(46, 67);
             label1.Name = "label1";
-            label1.Size = new Size(106, 22);
+            label1.Size = new Size(167, 36);
             label1.TabIndex = 0;
             label1.Text = "Username";
-            label1.Click += label1_Click;
             // 
             // panel2
             // 
             panel2.Controls.Add(pictureBox1);
             panel2.Dock = DockStyle.Left;
             panel2.Location = new Point(0, 0);
-            panel2.Margin = new Padding(2);
             panel2.Name = "panel2";
-            panel2.Size = new Size(299, 315);
+            panel2.Size = new Size(486, 504);
             panel2.TabIndex = 0;
             // 
             // pictureBox1
@@ -221,22 +179,19 @@
             pictureBox1.BackgroundImage = Properties.Resources.z7836550866230_417f1a1f391c1f9fe70c8209d71ad6ef;
             pictureBox1.Dock = DockStyle.Fill;
             pictureBox1.Location = new Point(0, 0);
-            pictureBox1.Margin = new Padding(2);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(299, 315);
+            pictureBox1.Size = new Size(486, 504);
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
-            pictureBox1.Click += label1_Click;
             // 
             // Frmsign
             // 
             AcceptButton = register;
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(13F, 32F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(0, 0, 64);
-            ClientSize = new Size(804, 472);
+            ClientSize = new Size(1306, 755);
             Controls.Add(panel1);
-            Margin = new Padding(2);
             Name = "Frmsign";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Sign up";
@@ -264,7 +219,5 @@
         private Label label4;
         private Label label5;
         private PictureBox pictureBox1;
-        private TextBox textBox1;
-        private Label label6;
     }
 }
