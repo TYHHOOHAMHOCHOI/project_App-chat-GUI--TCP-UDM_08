@@ -456,8 +456,7 @@ public partial class Form1 : Form
                     // Trường hợp 2: Client chat chung
                     else if (trimmed.StartsWith("PRIVATE:", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Format nhận vào: PRIVATE:TênNgườiNhận|Nội dung
-                        string payload = trimmed.Substring(8); // bỏ "PRIVATE:"
+                        string payload = trimmed.Substring(8);
                         int sep = payload.IndexOf('|');
                         if (sep > 0)
                         {
@@ -465,7 +464,6 @@ public partial class Form1 : Form
                             string content = payload.Substring(sep + 1).Trim();
                             string timeStamp = DateTime.Now.ToString("HH:mm:ss");
 
-                            // Tìm socket của người nhận
                             Socket? targetSocket = null;
                             lock (clientNames)
                             {
@@ -481,22 +479,23 @@ public partial class Form1 : Form
 
                             if (targetSocket != null)
                             {
-                                // Gửi cho người nhận
-                                string toReceiver = $"[{timeStamp}] [Gửi riêng] {clientName} → Bạn: {content}\n";
+                                // Người NHẬN thấy rõ tên người gửi
+                                string toReceiver = $"PRIVATE_MSG:{clientName}|{timeStamp}|{content}\n";
                                 try { targetSocket.Send(Encoding.UTF8.GetBytes(toReceiver)); } catch { }
 
-                                // Lưu tin nhắn riêng vào database
+                                // Người GỬI cũng thấy echo xác nhận
+                                string toSender = $"SENT_ACK:{targetName}|{content}\n";
+                                try { clientSocket.Send(Encoding.UTF8.GetBytes(toSender)); } catch { }
+
                                 try { _messageRepo?.SaveMessage(clientName, targetName, content, "private"); } catch { }
 
-                                // Ghi log Server (không broadcast)
                                 this.Invoke((MethodInvoker)delegate
                                 {
-                                    rtbLog.AppendText($"[{timeStamp}] [Gửi riêng] {clientName} → {targetName}: {content}\r\n");
+                                    rtbLog.AppendText($"[{timeStamp}] [Riêng] {clientName} → {targetName}: {content}\r\n");
                                 });
                             }
                             else
                             {
-                                // Người nhận không online, báo lại người gửi
                                 string notFound = $"[Hệ thống] {targetName} hiện không online.\n";
                                 clientSocket.Send(Encoding.UTF8.GetBytes(notFound));
                             }
