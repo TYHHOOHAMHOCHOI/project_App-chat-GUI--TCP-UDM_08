@@ -9,6 +9,7 @@ namespace ChatClient
     {
         private Dictionary<string, Image?> _userAvatars = new Dictionary<string, Image?>();
         public event Action<string, string>? OnReplyClicked;
+        public event Action<string, string>? OnForwardClicked;
 
         public ChatBubblePanel()
         {
@@ -39,6 +40,7 @@ namespace ChatClient
                 bubble.Margin = new Padding(10, 5, 10, 5);
                 bubble.SetMessage(senderName, messageText, timestamp, avatarImage, isOwnMessage);
                 bubble.OnReplyClicked += (sender, text) => OnReplyClicked?.Invoke(sender, text);
+                bubble.OnForwardClicked += (sender, text) => OnForwardClicked?.Invoke(sender, text);
 
                 this.Controls.Add(bubble);
 
@@ -72,6 +74,7 @@ namespace ChatClient
                 bubble.Margin = new Padding(10, 5, 10, 5);
                 bubble.SetMessage(senderName, messageText, timestamp, avatarImage, isOwnMessage, replyToUser, replyToMessage);
                 bubble.OnReplyClicked += (sender, text) => OnReplyClicked?.Invoke(sender, text);
+                bubble.OnForwardClicked += (sender, text) => OnForwardClicked?.Invoke(sender, text);
 
                 this.Controls.Add(bubble);
 
