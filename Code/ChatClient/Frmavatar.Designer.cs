@@ -1,6 +1,6 @@
 namespace ChatClient
 {
-    partial class AvatarForm
+    partial class Frmavatar
     {
         private System.ComponentModel.IContainer components = null;
 

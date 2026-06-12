@@ -11,22 +11,34 @@ namespace ChatClient;
 
 public partial class Form1 : Form
 {
+    // Quản lý kết nối và trạng thái
     private Socket? clientSocket;
     private bool isConnected = false;
+    //Quản lý danh sách người dùng online và ánh xạ tên người dùng → ID (dùng để hiển thị trong DataGridView)
     private readonly Dictionary<string, int> _userMap = new();
     private int _nextUserId = 1;
+    //biến cờ để biết đang nhắn riêng với ai (nếu có), null = đang nhắn chung
     private string? _privateTarget = null;
     private readonly string _loggedInUser;
-    private Dictionary<string, string?> _userAvatars = new(); // Lưu avatar base64 của mỗi user
+    // Cache avatar người dùng để tránh phải gọi lại nhiều lần
+    private Dictionary<string, string?> _userAvatars = new();
+
+    private Panel pnlReply = null!;
+    private Label lblReplyText = null!;
+    private Button btnCancelReply = null!;
+    private string? _replyTargetUser = null;
+    private string? _replyTargetMessage = null;
 
     public Form1(string loggedInUser)
     {
+        // Khởi tạo form và lưu tên người dùng đã đăng nhập
         InitializeComponent();
         _loggedInUser = loggedInUser;
     }
-
+    // Thiết lập giao diện và sự kiện khi form load
     private void Form1_Load(object? sender, EventArgs e)
     {
+        // Hiển thị tên người dùng đã đăng nhập và thiết lập trạng thái ban đầu
         txtUsername.Text = _loggedInUser;
         SetConnectedState(false);
         dgvUsers.Columns.Clear();
@@ -48,14 +60,87 @@ public partial class Form1 : Form
         dgvUsers.DefaultCellStyle.SelectionForeColor = Color.Black;
         conection.Click += conection_Click;
         unconection.Click += unconection_Click;
-
-        // Load user avatar and add click event
         LoadUserAvatar();
         pbUserAvatar.Click += pbUserAvatar_Click;
         pbUserAvatar.Cursor = Cursors.Hand;
+
+        InitializeReplyPanel();
+        chatBubblePanel.OnReplyClicked += ChatBubblePanel_OnReplyClicked;
+        chatBubblePanel.OnForwardClicked += ChatBubblePanel_OnForwardClicked;
     }
 
-    /// <summary>Loads and displays the logged-in user's avatar</summary>
+    private void InitializeReplyPanel()
+    {
+        pnlReply = new Panel();
+        pnlReply.Height = 30;
+        pnlReply.BackColor = Color.LightGray;
+        pnlReply.Visible = false;
+        pnlReply.Location = new Point(10, 495); // Ngay trên txtMessage
+        pnlReply.Width = 566;
+        pnlReply.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+        lblReplyText = new Label();
+        lblReplyText.AutoSize = true;
+        lblReplyText.Location = new Point(5, 5);
+        lblReplyText.ForeColor = Color.DarkSlateGray;
+        lblReplyText.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
+
+        btnCancelReply = new Button();
+        btnCancelReply.Text = "X";
+        btnCancelReply.Size = new Size(25, 25);
+        btnCancelReply.Location = new Point(pnlReply.Width - 30, 2);
+        btnCancelReply.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnCancelReply.FlatStyle = FlatStyle.Flat;
+        btnCancelReply.FlatAppearance.BorderSize = 0;
+        btnCancelReply.ForeColor = Color.Red;
+        btnCancelReply.Cursor = Cursors.Hand;
+        btnCancelReply.Click += (s, e) => CancelReply();
+
+        pnlReply.Controls.Add(lblReplyText);
+        pnlReply.Controls.Add(btnCancelReply);
+        this.Controls.Add(pnlReply);
+        pnlReply.BringToFront();
+    }
+
+    private void ChatBubblePanel_OnReplyClicked(string senderName, string messageText)
+    {
+        _replyTargetUser = senderName;
+        _replyTargetMessage = messageText;
+        string shortMsg = messageText.Length > 40 ? messageText.Substring(0, 40) + "..." : messageText;
+        lblReplyText.Text = $"Đang trả lời {senderName}: {shortMsg}";
+        pnlReply.Visible = true;
+        txtMessage.Focus();
+    }
+
+    private void ChatBubblePanel_OnForwardClicked(string senderName, string messageText)
+    {
+        if (!isConnected || clientSocket == null)
+        {
+            MessageBox.Show("Chưa kết nối tới server!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        string forwardText = $"[Chuyển tiếp từ {senderName}]: {messageText}";
+        var userAvatarBase64 = AccountManager.GetAvatar(_loggedInUser);
+
+        if (_privateTarget != null)
+        {
+            SendRaw($"PRIVATE:{_privateTarget}|{forwardText}\n");
+            AppendChatWithAvatar(_loggedInUser, $"[Gửi riêng tới {_privateTarget}] {forwardText}", true, userAvatarBase64);
+        }
+        else
+        {
+            SendRaw($"{forwardText}\n");
+            AppendChatWithAvatar(_loggedInUser, forwardText, true, userAvatarBase64);
+        }
+    }
+
+    private void CancelReply()
+    {
+        _replyTargetUser = null;
+        _replyTargetMessage = null;
+        pnlReply.Visible = false;
+    }
     private void LoadUserAvatar()
     {
         try
@@ -72,18 +157,13 @@ public partial class Form1 : Form
         }
         catch (Exception ex)
         {
-            // Silently fail if avatar cannot be loaded
             System.Diagnostics.Debug.WriteLine($"Error loading avatar: {ex.Message}");
         }
     }
-
-    /// <summary>Handles avatar picture box click to change avatar</summary>
     private void pbUserAvatar_Click(object? sender, EventArgs e)
     {
         ChangeUserAvatar();
     }
-
-    /// <summary>Opens dialog to select new avatar image</summary>
     private void ChangeUserAvatar()
     {
         using var openFileDialog = new OpenFileDialog();
@@ -94,10 +174,8 @@ public partial class Form1 : Form
         {
             try
             {
-                // Update avatar in AccountManager
                 if (AccountManager.SetAvatar(_loggedInUser, openFileDialog.FileName, out var message))
                 {
-                    // Reload and display the new avatar
                     LoadUserAvatar();
                     MessageBox.Show(message, "Thành công",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -116,11 +194,9 @@ public partial class Form1 : Form
             }
         }
     }
-
-    /// <summary>Opens the Avatar Manager form</summary>
     private void btnManageAvatar_Click(object? sender, EventArgs e)
     {
-        using var avatarForm = new AvatarForm(_loggedInUser);
+        using var avatarForm = new Frmavatar(_loggedInUser);
         if (avatarForm.ShowDialog(this) == DialogResult.OK)
         {
             // Reload avatar after changes
@@ -200,15 +276,50 @@ public partial class Form1 : Form
                     foreach (string line in msg.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                     {
                         //duung them load tn
-                        if (line.StartsWith("HISTORY:")){AppendChat(line.Substring(8),Color.Blue);
+                        if (line.StartsWith("HISTORY:"))
+                        {
+                            AppendChat(line.Substring(8), Color.Blue);
                             continue;
                         }
                         if (line.StartsWith("HISTORY_PRIVATE:"))
                         {
-                            AppendChat(line.Substring(16),Color.DarkViolet);
+                            AppendChat(line.Substring(16), Color.DarkViolet);
                             continue;
                         }
-                        if (line.Trim() =="HISTORY_EMPTY")
+                        if (line.StartsWith("HISTORY_REPLY:"))
+                        {
+                            string payload = line.Substring(14);
+                            int bracketEnd = payload.IndexOf(']');
+                            string afterTimestamp = payload.Substring(bracketEnd + 1).TrimStart();
+                            string[] parts = afterTimestamp.Split('|', 4);
+                            if (parts.Length == 4)
+                            {
+                                string sName = parts[0].Trim();
+                                if (sName.EndsWith(":")) sName = sName.Substring(0, sName.Length - 1);
+                                string rUser = parts[1].Trim();
+                                string rMsg = parts[2].Trim();
+                                string rContent = parts[3].Trim();
+                                AppendChatWithReply(sName, rContent, sName == _loggedInUser, rUser, rMsg);
+                            }
+                            continue;
+                        }
+                        if (line.StartsWith("HISTORY_PRIVATE_REPLY:"))
+                        {
+                            string payload = line.Substring(22);
+                            int bracketEnd = payload.IndexOf(']');
+                            string afterTimestamp = payload.Substring(bracketEnd + 1).TrimStart();
+                            string[] parts = afterTimestamp.Split('|', 4);
+                            if (parts.Length == 4)
+                            {
+                                string sName = parts[0].Split('-')[0].Trim();
+                                string rUser = parts[1].Trim();
+                                string rMsg = parts[2].Trim();
+                                string rContent = parts[3].Trim();
+                                AppendChatWithReply(sName, rContent, sName == _loggedInUser, rUser, rMsg);
+                            }
+                            continue;
+                        }
+                        if (line.Trim() == "HISTORY_EMPTY")
                         {
                             AppendChat("[Hệ thống] Chưa có lịch sử tin nhắn.");
                             continue;
@@ -280,6 +391,106 @@ public partial class Form1 : Form
                             }
                             continue;
                         }
+                        if (trimmed.StartsWith("SENT_ACK:"))
+                        {
+                            // Tùy chọn: parse và hiển thị nhẹ nhàng hơn, hoặc đơn giản là bỏ qua
+                            continue; // hoặc return
+                        }
+                        if (trimmed.StartsWith("PRIVATE_MSG:"))
+                        {
+                            string payload = trimmed.Substring("PRIVATE_MSG:".Length);
+                            string[] parts = payload.Split('|');
+                            if (parts.Length >= 3)
+                            {
+                                string privateSender = parts[0];   // ← đổi tên
+                                string privateContent = parts[2];  // ← đổi tên
+
+                                string? privateAvatar = null;
+                                if (_userAvatars.TryGetValue(privateSender, out var cached))
+                                    privateAvatar = cached;
+                                else
+                                {
+                                    try
+                                    {
+                                        privateAvatar = AccountManager.GetAvatar(privateSender);
+                                        if (!string.IsNullOrEmpty(privateAvatar))
+                                            _userAvatars[privateSender] = privateAvatar;
+                                    }
+                                    catch { }
+                                }
+
+                                AppendChatWithAvatar(privateSender, $"[Riêng] {privateContent}", false, privateAvatar);
+                            }
+                            continue;
+                        }
+
+                        if (trimmed.StartsWith("BROADCAST_REPLY:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string payload = trimmed.Substring(16);
+                            int bracketEnd = payload.IndexOf(']');
+                            string afterTimestamp = payload.Substring(bracketEnd + 1).TrimStart();
+                            string[] parts = afterTimestamp.Split('|', 4);
+                            if (parts.Length == 4)
+                            {
+                                string replySenderName = parts[0].Trim();
+                                string targetUser = parts[1].Trim();
+                                string targetMsg = parts[2].Trim();
+                                string content = parts[3].Trim();
+
+                                if (replySenderName == _loggedInUser) continue;
+
+                                string? replySenderAvatarBase64 = null;
+                                if (_userAvatars.TryGetValue(replySenderName, out var cachedAvatar))
+                                {
+                                    replySenderAvatarBase64 = cachedAvatar;
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        replySenderAvatarBase64 = AccountManager.GetAvatar(replySenderName);
+                                        if (!string.IsNullOrEmpty(replySenderAvatarBase64)) _userAvatars[replySenderName] = replySenderAvatarBase64;
+                                    }
+                                    catch { }
+                                }
+                                AppendChatWithReply(replySenderName, content, false, targetUser, targetMsg, replySenderAvatarBase64);
+                            }
+                            continue;
+                        }
+
+                        if (trimmed.StartsWith("PRIVATE_REPLY:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string payload = trimmed.Substring(14);
+                            int bracketEnd = payload.IndexOf(']');
+                            string afterTimestamp = payload.Substring(bracketEnd + 1).TrimStart();
+                            string[] parts = afterTimestamp.Split('|', 4);
+                            if (parts.Length == 4)
+                            {
+                                string replySenderName = parts[0].Trim();
+                                string targetUser = parts[1].Trim();
+                                string targetMsg = parts[2].Trim();
+                                string content = parts[3].Trim();
+
+                                if (replySenderName == _loggedInUser) continue;
+
+                                string? replySenderAvatarBase64 = null;
+                                if (_userAvatars.TryGetValue(replySenderName, out var cachedAvatar))
+                                {
+                                    replySenderAvatarBase64 = cachedAvatar;
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        replySenderAvatarBase64 = AccountManager.GetAvatar(replySenderName);
+                                        if (!string.IsNullOrEmpty(replySenderAvatarBase64)) _userAvatars[replySenderName] = replySenderAvatarBase64;
+                                    }
+                                    catch { }
+                                }
+                                AppendChatWithReply(replySenderName, "[Gửi riêng] " + content, false, targetUser, targetMsg, replySenderAvatarBase64);
+                            }
+                            continue;
+                        }
 
                         // ── TIN NHẮN THƯỜNG (chung hoặc riêng từ người khác gửi đến) ──
                         // Parse sender name from message format "[HH:mm:ss] [SenderName]: message"
@@ -344,26 +555,41 @@ public partial class Form1 : Form
             return;
         }
 
-        string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+        //string timeStamp = DateTime.Now.ToString("HH:mm:ss"); // biến đang dư thừa vì đã có messagebubble.cs
 
         // Get current user's avatar
         var userAvatarBase64 = AccountManager.GetAvatar(_loggedInUser);
 
         if (_privateTarget != null)
         {
-            // Gửi protocol PRIVATE: lên Server để Server định tuyến đúng người nhận
-            SendRaw($"PRIVATE:{_privateTarget}|{text}\n");
-            // Hiển thị bubble của tin nhắn của bạn gửi (bên phải với avatar)
-            AppendChatWithAvatar(_loggedInUser, $"[Gửi riêng tới {_privateTarget}] {text}", true, userAvatarBase64);
+            if (_replyTargetUser != null)
+            {
+                SendRaw($"REPLY_PRIVATE:{_privateTarget}|{_replyTargetUser}|{_replyTargetMessage}|{text}\n");
+                AppendChatWithReply(_loggedInUser, $"[Gửi riêng tới {_privateTarget}] {text}", true, _replyTargetUser, _replyTargetMessage, userAvatarBase64);
+            }
+            else
+            {
+                SendRaw($"PRIVATE:{_privateTarget}|{text}\n");
+                AppendChatWithAvatar(_loggedInUser, $"[Gửi riêng tới {_privateTarget}] {text}", true, userAvatarBase64);
+            }
         }
         else
         {
-            SendRaw($"{text}\n");
-            // Hiển thị bubble của tin nhắn của bạn gửi (bên phải với avatar)
-            AppendChatWithAvatar(_loggedInUser, text, true, userAvatarBase64);
+            if (_replyTargetUser != null)
+            {
+                SendRaw($"REPLY_PUBLIC:{_replyTargetUser}|{_replyTargetMessage}|{text}\n");
+                AppendChatWithReply(_loggedInUser, text, true, _replyTargetUser, _replyTargetMessage, userAvatarBase64);
+            }
+            else
+            {
+                SendRaw($"{text}\n");
+                AppendChatWithAvatar(_loggedInUser, text, true, userAvatarBase64);
+            }
         }
 
-        txtMessage.Clear();
+        CancelReply();
+
+        txtMessage.Clear(); // Xóa khung nhập liệu
         txtMessage.Focus();
     }
 
@@ -474,10 +700,10 @@ public partial class Form1 : Form
     /// <summary>Append chat message with sender's avatar</summary>
     private void AppendChatWithAvatar(string senderName, string messageText, bool isOwnMessage, string? avatarBase64 = null)
     {
-        if (chatBubblePanel.InvokeRequired) 
-        { 
-            SafeInvoke(() => AppendChatWithAvatar(senderName, messageText, isOwnMessage, avatarBase64)); 
-            return; 
+        if (chatBubblePanel.InvokeRequired)
+        {
+            SafeInvoke(() => AppendChatWithAvatar(senderName, messageText, isOwnMessage, avatarBase64));
+            return;
         }
 
         chatBubblePanel.AddMessage(senderName, messageText, DateTime.Now, isOwnMessage, avatarBase64);
@@ -489,9 +715,22 @@ public partial class Form1 : Form
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // NÚT NHẮN CHUNG
-    // ════════════════════════════════════════════════════════════════════════
+    private void AppendChatWithReply(string senderName, string messageText, bool isOwnMessage, string? replyToUser, string? replyToMessage, string? avatarBase64 = null)
+    {
+        if (chatBubblePanel.InvokeRequired)
+        {
+            SafeInvoke(() => AppendChatWithReply(senderName, messageText, isOwnMessage, replyToUser, replyToMessage, avatarBase64));
+            return;
+        }
+
+        chatBubblePanel.AddMessageWithReply(senderName, messageText, DateTime.Now, isOwnMessage, replyToUser, replyToMessage, avatarBase64);
+
+        if (!string.IsNullOrEmpty(avatarBase64))
+        {
+            _userAvatars[senderName] = avatarBase64;
+        }
+    }
+
     private void btnPublic_Click_1(object? sender, EventArgs e)
     {
         if (_privateTarget == null)
@@ -510,7 +749,7 @@ public partial class Form1 : Form
 
     }
     //dung them load tn
-    private void btnLoadHistory_Click(object sender,EventArgs e)
+    private void btnLoadHistory_Click(object sender, EventArgs e)
     {
         if (!isConnected)
         {

@@ -8,39 +8,105 @@ namespace ChatClient
     public partial class MessageBubble : UserControl
     {
         private Image? _avatarImage;
-        private string _senderName;
-        private string _messageText;
+        private string _senderName = string.Empty;
+        private string _messageText = string.Empty;
         private DateTime _timestamp;
         private bool _isOwnMessage;
+        private string? _replyToUser;
+        private string? _replyToMessage;
+        private Button btnReply;
+        private Button btnForward;
+        
+        public event Action<string, string>? OnReplyClicked;
+        public event Action<string, string>? OnForwardClicked;
         private const int AVATAR_SIZE = 40;
         private const int BUBBLE_PADDING = 10;
         private const int CORNER_RADIUS = 10;
+        private static readonly Font MessageFont = new Font("Segoe UI Emoji", 9F);
+        private static readonly Font ReplyButtonFont = new Font("Segoe UI", 7F, FontStyle.Bold);
+        private static readonly Size ReplyButtonSize = new Size(55, 20);
+        private static readonly Size ForwardButtonSize = new Size(65, 20);
 
         public MessageBubble()
         {
             InitializeComponent();
             this.DoubleBuffered = true;
             this.AutoSize = false;
+
+            btnReply = CreateActionButton("↩ Reply", ReplyButtonSize, () => OnReplyClicked?.Invoke(_senderName, _messageText));
+            this.Controls.Add(btnReply);
+
+            btnForward = CreateActionButton("➡ Forward", ForwardButtonSize, () => OnForwardClicked?.Invoke(_senderName, _messageText));
+            this.Controls.Add(btnForward);
         }
 
-        public void SetMessage(string senderName, string messageText, DateTime timestamp, Image? avatarImage, bool isOwnMessage)
+        private static Button CreateActionButton(string text, Size size, Action clickHandler)
+        {
+            var button = new Button
+            {
+                Text = text,
+                Font = ReplyButtonFont,
+                Size = size,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                ForeColor = Color.Teal,
+                Cursor = Cursors.Hand
+            };
+
+            button.FlatAppearance.BorderSize = 0;
+            button.Click += (s, e) => clickHandler();
+
+            return button;
+        }
+
+        public void SetMessage(string senderName, string messageText, DateTime timestamp, Image? avatarImage, bool isOwnMessage, string? replyToUser = null, string? replyToMessage = null)
         {
             _senderName = senderName;
             _messageText = messageText;
             _timestamp = timestamp;
             _avatarImage = avatarImage;
             _isOwnMessage = isOwnMessage;
+            _replyToUser = replyToUser;
+            _replyToMessage = replyToMessage;
+
+            var menu = new ContextMenuStrip();
+            var replyItem = new ToolStripMenuItem("Trả lời");
+            replyItem.Click += (s, e) => OnReplyClicked?.Invoke(_senderName, _messageText);
+            menu.Items.Add(replyItem);
+
+            var forwardItem = new ToolStripMenuItem("Chuyển tiếp");
+            forwardItem.Click += (s, e) => OnForwardClicked?.Invoke(_senderName, _messageText);
+            menu.Items.Add(forwardItem);
+
+            this.ContextMenuStrip = menu;
 
             // Calculate height based on text
+            int replyHeight = string.IsNullOrEmpty(_replyToUser) ? 0 : 40;
+
             using (var g = this.CreateGraphics())
             {
-                var font = new Font("Segoe UI", 9F);
-                var size = g.MeasureString(_messageText, font, this.Width - AVATAR_SIZE - 60);
-                var preferredHeight = (int)size.Height + BUBBLE_PADDING * 3 + 30;
+                var size = g.MeasureString(_messageText, MessageFont, this.Width - AVATAR_SIZE - 60);
+                var preferredHeight = (int)size.Height + BUBBLE_PADDING * 3 + 30 + replyHeight;
                 this.Height = Math.Max(preferredHeight, AVATAR_SIZE + BUBBLE_PADDING * 2);
             }
 
             this.Invalidate();
+
+            // Set button position at the bottom of the bubble
+            int btnY = this.Height - 20;
+            if (_isOwnMessage)
+            {
+                int bubbleWidth = this.Width - AVATAR_SIZE - 20;
+                int bubbleX = this.Width - bubbleWidth - 10;
+                btnReply.Location = new Point(bubbleX + bubbleWidth - 135, btnY);
+                btnForward.Location = new Point(bubbleX + bubbleWidth - 75, btnY);
+            }
+            else
+            {
+                int bubbleX = AVATAR_SIZE + 10;
+                btnReply.Location = new Point(bubbleX + 40, btnY);
+                btnForward.Location = new Point(bubbleX + 100, btnY);
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -68,10 +134,21 @@ namespace ChatClient
             var bubbleRect = new Rectangle(bubbleX, bubbleY, bubbleWidth - 10, this.Height - 10);
             DrawRoundedRectangle(g, bubbleRect, CORNER_RADIUS, new SolidBrush(Color.FromArgb(200, 230, 255)));
 
+            int textOffsetY = bubbleY + BUBBLE_PADDING;
+            if (!string.IsNullOrEmpty(_replyToUser))
+            {
+                var quoteRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, bubbleWidth - BUBBLE_PADDING * 2 - 10, 35);
+                DrawRoundedRectangle(g, quoteRect, 5, new SolidBrush(Color.FromArgb(180, 210, 240)));
+                g.DrawString($"Trả lời {_replyToUser}:", new Font("Segoe UI", 8F, FontStyle.Italic), new SolidBrush(Color.DarkGray), new PointF(quoteRect.X + 5, quoteRect.Y + 2));
+                string shortMsg = (_replyToMessage?.Length > 30 ? _replyToMessage.Substring(0, 30) + "..." : _replyToMessage) ?? string.Empty;
+                g.DrawString(shortMsg ?? "", new Font("Segoe UI", 8F), new SolidBrush(Color.Gray), new PointF(quoteRect.X + 5, quoteRect.Y + 16));
+                textOffsetY += 40;
+            }
+
             // Draw text
-            var textRect = new Rectangle(bubbleX + BUBBLE_PADDING, bubbleY + BUBBLE_PADDING, 
-                                        bubbleWidth - BUBBLE_PADDING * 3 - 10, this.Height - BUBBLE_PADDING * 2 - 10);
-            g.DrawString(_messageText, new Font("Segoe UI", 9F), new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
+            var textRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, 
+                                        bubbleWidth - BUBBLE_PADDING * 3 - 10, this.Height - textOffsetY - 10);
+            g.DrawString(_messageText, MessageFont, new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
 
             // Draw timestamp (nhỏ, dưới tin nhắn)
             var timeStr = _timestamp.ToString("HH:mm");
@@ -96,10 +173,21 @@ namespace ChatClient
             var bubbleRect = new Rectangle(bubbleX, bubbleY + 15, bubbleWidth - 10, this.Height - bubbleY - 25);
             DrawRoundedRectangle(g, bubbleRect, CORNER_RADIUS, new SolidBrush(Color.FromArgb(240, 240, 240)));
 
+            int textOffsetY = bubbleY + BUBBLE_PADDING + 15;
+            if (!string.IsNullOrEmpty(_replyToUser))
+            {
+                var quoteRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, bubbleWidth - BUBBLE_PADDING * 2 - 10, 35);
+                DrawRoundedRectangle(g, quoteRect, 5, new SolidBrush(Color.FromArgb(220, 220, 220)));
+                g.DrawString($"Trả lời {_replyToUser}:", new Font("Segoe UI", 8F, FontStyle.Italic), new SolidBrush(Color.Gray), new PointF(quoteRect.X + 5, quoteRect.Y + 2));
+                string shortMsg = (_replyToMessage?.Length > 30 ? _replyToMessage.Substring(0, 30) + "..." : _replyToMessage) ?? string.Empty;
+                g.DrawString(shortMsg ?? "", new Font("Segoe UI", 8F), new SolidBrush(Color.DimGray), new PointF(quoteRect.X + 5, quoteRect.Y + 16));
+                textOffsetY += 40;
+            }
+
             // Draw text
-            var textRect = new Rectangle(bubbleX + BUBBLE_PADDING, bubbleY + BUBBLE_PADDING + 15, 
-                                        bubbleWidth - BUBBLE_PADDING * 3 - 10, this.Height - BUBBLE_PADDING * 2 - 25);
-            g.DrawString(_messageText, new Font("Segoe UI", 9F), new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
+            var textRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, 
+                                        bubbleWidth - BUBBLE_PADDING * 3 - 10, this.Height - textOffsetY - 10);
+            g.DrawString(_messageText, MessageFont, new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
 
             // Draw timestamp
             var timeStr = _timestamp.ToString("HH:mm");

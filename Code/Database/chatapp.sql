@@ -75,9 +75,11 @@ CREATE TABLE IF NOT EXISTS ChatMessages (
     Receiver TEXT,
     Content TEXT NOT NULL,
     MessageType TEXT DEFAULT 'public',
-    SentAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    SentAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ReplyToUser TEXT,
+    ReplyToMessage TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_chatmsg_sender   ON ChatMessages(Sender);
 CREATE INDEX IF NOT EXISTS idx_chatmsg_receiver ON ChatMessages(Receiver);
-CREATE INDEX IF NOT EXISTS idx_chatmsg_sentat   ON ChatMessages(SentAt);
+CREATE INDEX IF NOT EXISTS idx_chatmsg_sentat   ON ChatMessages(SentAt);

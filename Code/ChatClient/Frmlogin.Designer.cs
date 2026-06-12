@@ -13,7 +13,7 @@ partial class Frmlogin
 
     #region Windows Form Designer generated code
 
-    private void InitializeComponent()
+    private void InitializeComponent() // hàm tự động sinh ,xây dựng winform
     {
         loginlogin = new Button();
         panel1 = new Panel();
@@ -99,7 +99,6 @@ partial class Frmlogin
         label1.Size = new Size(179, 17);
         label1.TabIndex = 5;
         label1.Text = "Không có tài khoản?";
-        label1.Click += label1_Click;
         // 
         // loginpassword
         // 
@@ -123,7 +122,6 @@ partial class Frmlogin
         password.Size = new Size(106, 22);
         password.TabIndex = 3;
         password.Text = "Password";
-        password.Click += password_Click;
         // 
         // loginusername
         // 
@@ -133,7 +131,6 @@ partial class Frmlogin
         loginusername.Name = "loginusername";
         loginusername.Size = new Size(264, 28);
         loginusername.TabIndex = 2;
-        loginusername.TextChanged += textBox1_TextChanged;
         // 
         // account
         // 
@@ -147,7 +144,6 @@ partial class Frmlogin
         account.Size = new Size(94, 22);
         account.TabIndex = 1;
         account.Text = "Account";
-        account.Click += username_Click;
         // 
         // panel4
         // 

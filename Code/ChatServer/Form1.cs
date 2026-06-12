@@ -456,8 +456,7 @@ public partial class Form1 : Form
                     // Trường hợp 2: Client chat chung
                     else if (trimmed.StartsWith("PRIVATE:", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Format nhận vào: PRIVATE:TênNgườiNhận|Nội dung
-                        string payload = trimmed.Substring(8); // bỏ "PRIVATE:"
+                        string payload = trimmed.Substring(8);
                         int sep = payload.IndexOf('|');
                         if (sep > 0)
                         {
@@ -465,7 +464,6 @@ public partial class Form1 : Form
                             string content = payload.Substring(sep + 1).Trim();
                             string timeStamp = DateTime.Now.ToString("HH:mm:ss");
 
-                            // Tìm socket của người nhận
                             Socket? targetSocket = null;
                             lock (clientNames)
                             {
@@ -481,22 +479,91 @@ public partial class Form1 : Form
 
                             if (targetSocket != null)
                             {
-                                // Gửi cho người nhận
-                                string toReceiver = $"[{timeStamp}] [Gửi riêng] {clientName} → Bạn: {content}\n";
+                                // Người NHẬN thấy rõ tên người gửi
+                                string toReceiver = $"PRIVATE_MSG:{clientName}|{timeStamp}|{content}\n";
                                 try { targetSocket.Send(Encoding.UTF8.GetBytes(toReceiver)); } catch { }
 
-                                // Lưu tin nhắn riêng vào database
+                                // Người GỬI cũng thấy echo xác nhận
+                                string toSender = $"SENT_ACK:{targetName}|{content}\n";
+                                try { clientSocket.Send(Encoding.UTF8.GetBytes(toSender)); } catch { }
+
                                 try { _messageRepo?.SaveMessage(clientName, targetName, content, "private"); } catch { }
 
-                                // Ghi log Server (không broadcast)
                                 this.Invoke((MethodInvoker)delegate
                                 {
-                                    rtbLog.AppendText($"[{timeStamp}] [Gửi riêng] {clientName} → {targetName}: {content}\r\n");
+                                    rtbLog.AppendText($"[{timeStamp}] [Riêng] {clientName} → {targetName}: {content}\r\n");
                                 });
                             }
                             else
                             {
-                                // Người nhận không online, báo lại người gửi
+                                string notFound = $"[Hệ thống] {targetName} hiện không online.\n";
+                                clientSocket.Send(Encoding.UTF8.GetBytes(notFound));
+                            }
+                        }
+                    }
+                    // Trường hợp 2.5: Client trả lời (Reply)
+                    else if (trimmed.StartsWith("REPLY_PUBLIC:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string payload = trimmed.Substring(13); // bỏ "REPLY_PUBLIC:"
+                        string[] parts = payload.Split('|', 3);
+                        if (parts.Length == 3)
+                        {
+                            string targetUser = parts[0].Trim();
+                            string targetMsg = parts[1].Trim();
+                            string content = parts[2].Trim();
+                            string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+
+                            string formattedMsg = $"BROADCAST_REPLY:[{timeStamp}] {clientName}|{targetUser}|{targetMsg}|{content}";
+                            
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                rtbLog.AppendText($"[{timeStamp}] {clientName} (trả lời {targetUser}): {content}\r\n");
+                            });
+
+                            BroadcastMessage(formattedMsg + "\n");
+
+                            try { _messageRepo?.SaveMessage(clientName, null, content, "public", targetUser, targetMsg); } catch { }
+                        }
+                    }
+                    else if (trimmed.StartsWith("REPLY_PRIVATE:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string payload = trimmed.Substring(14); // bỏ "REPLY_PRIVATE:"
+                        string[] parts = payload.Split('|', 4);
+                        if (parts.Length == 4)
+                        {
+                            string targetName = parts[0].Trim();
+                            string repliedUser = parts[1].Trim();
+                            string repliedMsg = parts[2].Trim();
+                            string content = parts[3].Trim();
+                            string timeStamp = DateTime.Now.ToString("HH:mm:ss");
+
+                            Socket? targetSocket = null;
+                            lock (clientNames)
+                            {
+                                foreach (var kv in clientNames)
+                                {
+                                    if (kv.Value == targetName)
+                                    {
+                                        targetSocket = kv.Key;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (targetSocket != null)
+                            {
+                                string toReceiver = $"PRIVATE_REPLY:[{timeStamp}] {clientName}|{repliedUser}|{repliedMsg}|{content}\n";
+                                try { targetSocket.Send(Encoding.UTF8.GetBytes(toReceiver)); } catch { }
+
+                                try { _messageRepo?.SaveMessage(clientName, targetName, content, "private", repliedUser, repliedMsg); } catch { }
+
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    rtbLog.AppendText($"[{timeStamp}] [Gửi riêng] {clientName} (trả lời {repliedUser}) -> {targetName}: {content}\r\n");
+                                });
+                            }
+                            else
+                            {
                                 string notFound = $"[Hệ thống] {targetName} hiện không online.\n";
                                 clientSocket.Send(Encoding.UTF8.GetBytes(notFound));
                             }
@@ -884,8 +951,15 @@ public partial class Form1 : Form
 
         foreach (var msg in list)
         {
-            string line =
-                $"HISTORY:[{msg.SentAt:HH:mm:ss}] {msg.Sender}: {msg.Content}\n";
+            string line;
+            if (!string.IsNullOrEmpty(msg.ReplyToUser))
+            {
+                line = $"HISTORY_REPLY:[{msg.SentAt:HH:mm:ss}] {msg.Sender}|{msg.ReplyToUser}|{msg.ReplyToMessage}|{msg.Content}\n";
+            }
+            else
+            {
+                line = $"HISTORY:[{msg.SentAt:HH:mm:ss}] {msg.Sender}: {msg.Content}\n";
+            }
 
             client.Send(
                 Encoding.UTF8.GetBytes(line));
@@ -916,8 +990,15 @@ public partial class Form1 : Form
 
         foreach (var msg in list)
         {
-            string line =
-                $"HISTORY_PRIVATE:[{msg.SentAt:HH:mm:ss}] {msg.Sender}->{msg.Receiver}: {msg.Content}\n";
+            string line;
+            if (!string.IsNullOrEmpty(msg.ReplyToUser))
+            {
+                line = $"HISTORY_PRIVATE_REPLY:[{msg.SentAt:HH:mm:ss}] {msg.Sender}->{msg.Receiver}|{msg.ReplyToUser}|{msg.ReplyToMessage}|{msg.Content}\n";
+            }
+            else
+            {
+                line = $"HISTORY_PRIVATE:[{msg.SentAt:HH:mm:ss}] {msg.Sender}->{msg.Receiver}: {msg.Content}\n";
+            }
 
             client.Send(
                 Encoding.UTF8.GetBytes(line));
