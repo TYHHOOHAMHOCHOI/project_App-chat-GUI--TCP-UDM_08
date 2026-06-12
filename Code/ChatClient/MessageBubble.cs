@@ -20,6 +20,8 @@ namespace ChatClient
         private const int AVATAR_SIZE = 40;
         private const int BUBBLE_PADDING = 10;
         private const int CORNER_RADIUS = 10;
+        private static readonly Font MessageFont = new Font("Segoe UI Emoji", 9F);
+        private static readonly Font ReplyButtonFont = new Font("Segoe UI", 7F, FontStyle.Bold);
 
         public MessageBubble()
         {
@@ -29,7 +31,7 @@ namespace ChatClient
 
             btnReply = new Button();
             btnReply.Text = "↩ Reply";
-            btnReply.Font = new Font("Segoe UI", 7F, FontStyle.Bold);
+            btnReply.Font = ReplyButtonFont;
             btnReply.Size = new Size(55, 20);
             btnReply.FlatStyle = FlatStyle.Flat;
             btnReply.FlatAppearance.BorderSize = 0;
@@ -61,8 +63,7 @@ namespace ChatClient
 
             using (var g = this.CreateGraphics())
             {
-                var font = new Font("Segoe UI", 9F);
-                var size = g.MeasureString(_messageText, font, this.Width - AVATAR_SIZE - 60);
+                var size = g.MeasureString(_messageText, MessageFont, this.Width - AVATAR_SIZE - 60);
                 var preferredHeight = (int)size.Height + BUBBLE_PADDING * 3 + 30 + replyHeight;
                 this.Height = Math.Max(preferredHeight, AVATAR_SIZE + BUBBLE_PADDING * 2);
             }
@@ -123,7 +124,7 @@ namespace ChatClient
             // Draw text
             var textRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, 
                                         bubbleWidth - BUBBLE_PADDING * 3 - 10, this.Height - textOffsetY - 10);
-            g.DrawString(_messageText, new Font("Segoe UI", 9F), new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
+            g.DrawString(_messageText, MessageFont, new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
 
             // Draw timestamp (nhỏ, dưới tin nhắn)
             var timeStr = _timestamp.ToString("HH:mm");
@@ -162,7 +163,7 @@ namespace ChatClient
             // Draw text
             var textRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, 
                                         bubbleWidth - BUBBLE_PADDING * 3 - 10, this.Height - textOffsetY - 10);
-            g.DrawString(_messageText, new Font("Segoe UI", 9F), new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
+            g.DrawString(_messageText, MessageFont, new SolidBrush(Color.Black), textRect, StringFormat.GenericDefault);
 
             // Draw timestamp
             var timeStr = _timestamp.ToString("HH:mm");

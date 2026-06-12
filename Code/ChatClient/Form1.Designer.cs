@@ -108,7 +108,7 @@ partial class Form1
         // 
         txtMessage.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         txtMessage.BackColor = Color.White;
-        txtMessage.Font = new Font("Segoe UI", 9F);
+        txtMessage.Font = new Font("Segoe UI Emoji", 9F);
         txtMessage.ForeColor = Color.Black;
         txtMessage.Location = new Point(10, 528);
         txtMessage.Margin = new Padding(2, 2, 2, 2);
