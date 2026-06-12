@@ -38,7 +38,9 @@ namespace ChatCommon
                     Receiver    TEXT,
                     Content     TEXT    NOT NULL,
                     MessageType TEXT    DEFAULT 'public',
-                    SentAt      DATETIME DEFAULT CURRENT_TIMESTAMP
+                    SentAt      DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    ReplyToUser TEXT,
+                    ReplyToMessage TEXT
                 );
 
                 -- Index để tăng tốc truy vấn khi load lịch sử (Phase 2)
@@ -60,18 +62,20 @@ namespace ChatCommon
         /// <param name="receiver">Username người nhận (null = tin chung).</param>
         /// <param name="content">Nội dung tin nhắn.</param>
         /// <param name="messageType">"public", "private", "server", "system".</param>
-        public void SaveMessage(string sender, string? receiver, string content, string messageType)
+        public void SaveMessage(string sender, string? receiver, string content, string messageType, string? replyToUser = null, string? replyToMessage = null)
         {
             using var cmd = _conn.CreateCommand();
             cmd.CommandText = @"
-                INSERT INTO ChatMessages (Sender, Receiver, Content, MessageType, SentAt)
-                VALUES (@sender, @receiver, @content, @type, @sentAt)
+                INSERT INTO ChatMessages (Sender, Receiver, Content, MessageType, SentAt, ReplyToUser, ReplyToMessage)
+                VALUES (@sender, @receiver, @content, @type, @sentAt, @replyToUser, @replyToMessage)
             ";
             cmd.Parameters.AddWithValue("@sender", sender);
             cmd.Parameters.AddWithValue("@receiver", (object?)receiver ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@content", content);
             cmd.Parameters.AddWithValue("@type", messageType);
             cmd.Parameters.AddWithValue("@sentAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            cmd.Parameters.AddWithValue("@replyToUser", (object?)replyToUser ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@replyToMessage", (object?)replyToMessage ?? DBNull.Value);
             cmd.ExecuteNonQuery();
         }
 
@@ -105,7 +109,7 @@ namespace ChatCommon
         using var cmd = _conn.CreateCommand();
 
         cmd.CommandText = @"
-        SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+        SELECT Id, Sender, Receiver, Content, MessageType, SentAt, ReplyToUser, ReplyToMessage
         FROM ChatMessages
         WHERE MessageType = 'public'
         ORDER BY SentAt DESC
@@ -128,7 +132,7 @@ namespace ChatCommon
             using var cmd = _conn.CreateCommand();
 
             cmd.CommandText = @"
-            SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+            SELECT Id, Sender, Receiver, Content, MessageType, SentAt, ReplyToUser, ReplyToMessage
             FROM ChatMessages
             WHERE MessageType='private'
             ORDER BY SentAt DESC
@@ -146,7 +150,7 @@ namespace ChatCommon
             using var cmd = _conn.CreateCommand();
 
             cmd.CommandText = @"
-            SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+            SELECT Id, Sender, Receiver, Content, MessageType, SentAt, ReplyToUser, ReplyToMessage
             FROM ChatMessages
             WHERE MessageType='private'
             AND (Sender=@user OR Receiver=@user)
@@ -165,7 +169,7 @@ namespace ChatCommon
             using var cmd = _conn.CreateCommand();
 
             cmd.CommandText = @"
-            SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+            SELECT Id, Sender, Receiver, Content, MessageType, SentAt, ReplyToUser, ReplyToMessage
             FROM ChatMessages
             WHERE MessageType='private'
             AND
@@ -192,7 +196,7 @@ namespace ChatCommon
         {
             using var cmd = _conn.CreateCommand();
             cmd.CommandText = @"
-                SELECT Id, Sender, Receiver, Content, MessageType, SentAt
+                SELECT Id, Sender, Receiver, Content, MessageType, SentAt, ReplyToUser, ReplyToMessage
                 FROM ChatMessages
                 WHERE Receiver IS NULL
                    OR (MessageType = 'private' AND (Sender = @user OR Receiver = @user))
@@ -220,7 +224,9 @@ namespace ChatCommon
                     Receiver = reader.IsDBNull(2) ? null : reader.GetString(2),
                     Content = reader.GetString(3),
                     MessageType = reader.GetString(4),
-                    SentAt = DateTime.TryParse(reader.GetString(5), out var dt) ? dt : DateTime.Now
+                    SentAt = DateTime.TryParse(reader.GetString(5), out var dt) ? dt : DateTime.Now,
+                    ReplyToUser = reader.IsDBNull(6) ? null : reader.GetString(6),
+                    ReplyToMessage = reader.IsDBNull(7) ? null : reader.GetString(7)
                 });
             }
             // Đảo lại cho đúng thứ tự thời gian (cũ → mới) vì query ORDER BY DESC

@@ -27,5 +27,11 @@ namespace ChatCommon
 
         /// <summary>Thời điểm gửi.</summary>
         public DateTime SentAt { get; set; } = DateTime.Now;
+
+        /// <summary>Username của tin nhắn đang trả lời (nếu có).</summary>
+        public string? ReplyToUser { get; set; }
+
+        /// <summary>Nội dung của tin nhắn đang trả lời (nếu có).</summary>
+        public string? ReplyToMessage { get; set; }
     }
 }
