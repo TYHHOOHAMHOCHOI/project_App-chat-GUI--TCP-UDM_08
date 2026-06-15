@@ -28,7 +28,7 @@ public partial class Form1 : Form
     {
         try
         {
-            string localIP = "127.0.0.1";
+            string ipLocal = "127.0.0.1";
 
             // Lấy danh sách tất cả IP của máy này
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -38,10 +38,10 @@ public partial class Form1 : Form
                 
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    localIP = ip.ToString();
+                    ipLocal = ip.ToString();
 
                     // Ưu tiên chọn IP của mạng LAN
-                    if (localIP.StartsWith("192.168.") || localIP.StartsWith("10.") || localIP.StartsWith("172."))
+                    if (ipLocal.StartsWith("192.168.") || ipLocal.StartsWith("10.") || ipLocal.StartsWith("172."))
                     {
                         break;
                     }
@@ -49,7 +49,7 @@ public partial class Form1 : Form
             }
 
             // Gán số IP tìm được vào ô TextBox hiển thị trên giao diện Server
-            txtAddress.Text = localIP;
+            txtAddress.Text = ipLocal;
         }
         catch (Exception)
         {
