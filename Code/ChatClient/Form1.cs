@@ -312,12 +312,43 @@ public partial class Form1 : Form
                         //duung them load tn
                         if (line.StartsWith("HISTORY:"))
                         {
-                            AppendChat(line.Substring(8), Color.Blue);
+                            string historyMsg = line.Substring(8).Trim();
+
+                            string historySender = ExtractSenderFromMessage(historyMsg);
+                            string historyText = ExtractMessageContent(historyMsg);
+
+                            AppendChatWithAvatar(
+                                historySender,
+                                historyText,
+                                historySender == _loggedInUser);
+
                             continue;
                         }
+
                         if (line.StartsWith("HISTORY_PRIVATE:"))
                         {
-                            AppendChat(line.Substring(16), Color.DarkViolet);
+                            string historyMsg = line.Substring(16).Trim();
+
+                            int endTime = historyMsg.IndexOf(']');
+                            string remain = historyMsg.Substring(endTime + 1).Trim();
+
+                            int arrow = remain.IndexOf("->");
+                            int colon = remain.IndexOf(':');
+
+                            string historySender = "";
+                            string historyText = "";
+
+                            if (arrow > 0 && colon > arrow)
+                            {
+                                historySender = remain.Substring(0, arrow).Trim();
+                                historyText = remain.Substring(colon + 1).Trim();
+                            }
+
+                            AppendChatWithAvatar(
+                                historySender,
+                                "[Riêng] " + historyText,
+                                historySender == _loggedInUser);
+
                             continue;
                         }
                         if (line.StartsWith("HISTORY_REPLY:"))
@@ -787,10 +818,11 @@ public partial class Form1 : Form
     {
         if (!isConnected)
         {
-            MessageBox.Show(
-                "Chưa kết nối Server");
+            MessageBox.Show("Chưa kết nối Server");
             return;
         }
+
+        chatBubblePanel.ClearMessages();
 
         if (_privateTarget == null)
         {
@@ -798,8 +830,7 @@ public partial class Form1 : Form
         }
         else
         {
-            SendRaw(
-                $"LOAD_PRIVATE:{_privateTarget}\n");
+            SendRaw($"LOAD_PRIVATE:{_privateTarget}\n");
         }
     }
 

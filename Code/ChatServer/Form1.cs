@@ -339,7 +339,6 @@ public partial class Form1 : Form
 
                 if (data == "LOAD_PUBLIC")
                 {
-                    _messageRepo.SaveMessage(clientName, null, data, "public");
                     SendPublicHistory(clientSocket);
                     continue;
                 }
