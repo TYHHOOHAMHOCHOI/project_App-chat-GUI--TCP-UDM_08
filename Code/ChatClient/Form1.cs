@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Net.NetworkInformation;
 
 namespace ChatClient;
 
@@ -40,6 +41,39 @@ public partial class Form1 : Form
     {
         // Hiển thị tên người dùng đã đăng nhập và thiết lập trạng thái ban đầu
         txtUsername.Text = _loggedInUser;
+        try
+        {
+            int portToCheck = 9988; // Đổi số này thành số Port mặc định của bạn
+            bool isServerRunningLocal = false;
+
+            // Lấy danh sách các Port TCP đang ở trạng thái Lắng nghe (Listen) trên máy này
+            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] tcpConnListeners = ipGlobalProperties.GetActiveTcpListeners();
+
+            foreach (IPEndPoint tcpi in tcpConnListeners)
+            {
+                if (tcpi.Port == portToCheck)
+                {
+                    isServerRunningLocal = true;
+                    break;
+                }
+            }
+
+            
+            if (isServerRunningLocal)
+            {
+                textBox2.Text = "127.0.0.1"; 
+            }
+            else
+            {
+                textBox2.Text = string.Empty;
+            }
+        }
+        catch (Exception)
+        {
+            textBox2.Text = string.Empty;
+        }
+
         SetConnectedState(false);
         dgvUsers.Columns.Clear();
         dgvUsers.Columns.Add("colID", "ID");

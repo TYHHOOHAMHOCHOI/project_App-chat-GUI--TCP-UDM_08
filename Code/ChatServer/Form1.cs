@@ -26,7 +26,36 @@ public partial class Form1 : Form
 
     private void Form1_Load(object sender, EventArgs e)
     {
+        try
+        {
+            string localIP = "127.0.0.1";
 
+            // Lấy danh sách tất cả IP của máy này
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+
+            foreach (var ip in host.AddressList)
+            {
+                
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    localIP = ip.ToString();
+
+                    // Ưu tiên chọn IP của mạng LAN
+                    if (localIP.StartsWith("192.168.") || localIP.StartsWith("10.") || localIP.StartsWith("172."))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            // Gán số IP tìm được vào ô TextBox hiển thị trên giao diện Server
+            txtAddress.Text = localIP;
+        }
+        catch (Exception)
+        {
+            // tạm localhost để không bị crash app
+            txtAddress.Text = "127.0.0.1";
+        }
     }
 
     private void button1_Click(object sender, EventArgs e)
@@ -346,7 +375,8 @@ public partial class Form1 : Form
 
                         // Lấy Key đang được cấu hình hiện tại trên giao diện Server công khai
                         string serverKey = "";
-                        this.Invoke((MethodInvoker)delegate {
+                        this.Invoke((MethodInvoker)delegate
+                        {
                             serverKey = txtKey.Text.Trim();
                         });
 
@@ -359,7 +389,8 @@ public partial class Form1 : Form
                             clientSocket.Send(errData);
 
                             // 2. Ghi log cảnh báo sai Key lên Server
-                            this.Invoke((MethodInvoker)delegate {
+                            this.Invoke((MethodInvoker)delegate
+                            {
                                 rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Cảnh báo] Từ chối kết nối từ IP {((IPEndPoint)clientSocket.RemoteEndPoint).Address} do nhập sai mật mã Key.\r\n");
                             });
 
@@ -514,7 +545,7 @@ public partial class Form1 : Form
                             string timeStamp = DateTime.Now.ToString("HH:mm:ss");
 
                             string formattedMsg = $"BROADCAST_REPLY:[{timeStamp}] {clientName}|{targetUser}|{targetMsg}|{content}";
-                            
+
                             this.Invoke((MethodInvoker)delegate
                             {
                                 rtbLog.AppendText($"[{timeStamp}] {clientName} (trả lời {targetUser}): {content}\r\n");
@@ -1063,6 +1094,8 @@ public partial class Form1 : Form
         }
     }
 
+    private void txtAddress_TextChanged(object sender, EventArgs e)
+    {
 
-
+    }
 }

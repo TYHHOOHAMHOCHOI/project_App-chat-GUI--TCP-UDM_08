@@ -28,11 +28,10 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
+        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
         txtSearchUser = new TextBox();
         btnLoadPublic = new Button();
         btnLoadPrivate = new Button();
-
-        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
         btnOpenServer = new Button();
         btnClear = new Button();
         lableUsername = new Label();
@@ -62,27 +61,32 @@ partial class Form1
         ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
         ((System.ComponentModel.ISupportInitialize)dgvClients).BeginInit();
         SuspendLayout();
-
-        //
-        //load chat
-        //
-        // Load chat chung
-        btnLoadPublic.Location = new Point(140, 156);
-        btnLoadPublic.Size = new Size(120, 30);
-        btnLoadPublic.Text = "Load Chung";
-        btnLoadPublic.Click += btnLoadPublic_Click;
-        //
-        // Load chat riêng
-        btnLoadPrivate.Location = new Point(270, 156);
-        btnLoadPrivate.Size = new Size(120, 30);
-        btnLoadPrivate.Text = "Load Riêng";
-        btnLoadPrivate.Click += btnLoadPrivate_Click;
-
+        // 
+        // txtSearchUser
+        // 
         txtSearchUser.Location = new Point(270, 126);
         txtSearchUser.Name = "txtSearchUser";
-        txtSearchUser.Size = new Size(120, 27);
         txtSearchUser.PlaceholderText = "Tên người dùng";
-
+        txtSearchUser.Size = new Size(120, 27);
+        txtSearchUser.TabIndex = 23;
+        // 
+        // btnLoadPublic
+        // 
+        btnLoadPublic.Location = new Point(140, 156);
+        btnLoadPublic.Name = "btnLoadPublic";
+        btnLoadPublic.Size = new Size(120, 30);
+        btnLoadPublic.TabIndex = 21;
+        btnLoadPublic.Text = "Load Chung";
+        btnLoadPublic.Click += btnLoadPublic_Click;
+        // 
+        // btnLoadPrivate
+        // 
+        btnLoadPrivate.Location = new Point(270, 156);
+        btnLoadPrivate.Name = "btnLoadPrivate";
+        btnLoadPrivate.Size = new Size(120, 30);
+        btnLoadPrivate.TabIndex = 22;
+        btnLoadPrivate.Text = "Load Riêng";
+        btnLoadPrivate.Click += btnLoadPrivate_Click;
         // 
         // btnOpenServer
         // 
@@ -140,6 +144,7 @@ partial class Form1
         txtAddress.Size = new Size(191, 27);
         txtAddress.TabIndex = 5;
         txtAddress.Text = "0.0.0.0";
+        txtAddress.TextChanged += txtAddress_TextChanged;
         // 
         // labelPort
         // 
@@ -266,6 +271,12 @@ partial class Form1
         dgvClients.TabIndex = 17;
         dgvClients.CellContentClick += dgvClients_CellContentClick;
         // 
+        // colAvatar
+        // 
+        colAvatar.MinimumWidth = 6;
+        colAvatar.Name = "colAvatar";
+        colAvatar.Width = 125;
+        // 
         // colID
         // 
         colID.HeaderText = "ID";
@@ -363,12 +374,9 @@ partial class Form1
         Controls.Add(lableUsername);
         Controls.Add(btnClear);
         Controls.Add(btnOpenServer);
-
         Controls.Add(btnLoadPublic);
         Controls.Add(btnLoadPrivate);
         Controls.Add(txtSearchUser);
-
-
         Name = "Form1";
         Text = "Server";
         Load += Form1_Load;
