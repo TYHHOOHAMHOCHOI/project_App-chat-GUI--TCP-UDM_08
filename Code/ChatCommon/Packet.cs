@@ -11,9 +11,13 @@ namespace ChatCommon
         public string Receiver { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
 
+
         // Fix CS0102: Đã xóa dòng khai báo FileData bị trùng lặp.
         // Thêm dấu "?" để cho phép FileData được null (vì không phải tin nhắn nào cũng có file)
         public byte[]? FileData { get; set; }
+
+        
+
 
         // Avatar data in base64 format
         public string? Avatar { get; set; }
