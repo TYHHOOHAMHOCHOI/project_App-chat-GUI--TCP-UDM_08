@@ -8,20 +8,24 @@ namespace ChatClient
     public partial class MessageBubble : UserControl
     {
         private Image? _avatarImage;
-        private string _senderName;
-        private string _messageText;
+        private string _senderName = string.Empty;
+        private string _messageText = string.Empty;
         private DateTime _timestamp;
         private bool _isOwnMessage;
         private string? _replyToUser;
         private string? _replyToMessage;
         private Button btnReply;
+        private Button btnForward;
         
         public event Action<string, string>? OnReplyClicked;
+        public event Action<string, string>? OnForwardClicked;
         private const int AVATAR_SIZE = 40;
         private const int BUBBLE_PADDING = 10;
         private const int CORNER_RADIUS = 10;
         private static readonly Font MessageFont = new Font("Segoe UI Emoji", 9F);
         private static readonly Font ReplyButtonFont = new Font("Segoe UI", 7F, FontStyle.Bold);
+        private static readonly Size ReplyButtonSize = new Size(55, 20);
+        private static readonly Size ForwardButtonSize = new Size(65, 20);
 
         public MessageBubble()
         {
@@ -29,17 +33,30 @@ namespace ChatClient
             this.DoubleBuffered = true;
             this.AutoSize = false;
 
-            btnReply = new Button();
-            btnReply.Text = "↩ Reply";
-            btnReply.Font = ReplyButtonFont;
-            btnReply.Size = new Size(55, 20);
-            btnReply.FlatStyle = FlatStyle.Flat;
-            btnReply.FlatAppearance.BorderSize = 0;
-            btnReply.BackColor = Color.Transparent;
-            btnReply.ForeColor = Color.Teal;
-            btnReply.Cursor = Cursors.Hand;
-            btnReply.Click += (s, e) => OnReplyClicked?.Invoke(_senderName, _messageText);
+            btnReply = CreateActionButton("↩ Reply", ReplyButtonSize, () => OnReplyClicked?.Invoke(_senderName, _messageText));
             this.Controls.Add(btnReply);
+
+            btnForward = CreateActionButton("➡ Forward", ForwardButtonSize, () => OnForwardClicked?.Invoke(_senderName, _messageText));
+            this.Controls.Add(btnForward);
+        }
+
+        private static Button CreateActionButton(string text, Size size, Action clickHandler)
+        {
+            var button = new Button
+            {
+                Text = text,
+                Font = ReplyButtonFont,
+                Size = size,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                ForeColor = Color.Teal,
+                Cursor = Cursors.Hand
+            };
+
+            button.FlatAppearance.BorderSize = 0;
+            button.Click += (s, e) => clickHandler();
+
+            return button;
         }
 
         public void SetMessage(string senderName, string messageText, DateTime timestamp, Image? avatarImage, bool isOwnMessage, string? replyToUser = null, string? replyToMessage = null)
@@ -56,6 +73,11 @@ namespace ChatClient
             var replyItem = new ToolStripMenuItem("Trả lời");
             replyItem.Click += (s, e) => OnReplyClicked?.Invoke(_senderName, _messageText);
             menu.Items.Add(replyItem);
+
+            var forwardItem = new ToolStripMenuItem("Chuyển tiếp");
+            forwardItem.Click += (s, e) => OnForwardClicked?.Invoke(_senderName, _messageText);
+            menu.Items.Add(forwardItem);
+
             this.ContextMenuStrip = menu;
 
             // Calculate height based on text
@@ -76,12 +98,14 @@ namespace ChatClient
             {
                 int bubbleWidth = this.Width - AVATAR_SIZE - 20;
                 int bubbleX = this.Width - bubbleWidth - 10;
-                btnReply.Location = new Point(bubbleX + bubbleWidth - 65, btnY);
+                btnReply.Location = new Point(bubbleX + bubbleWidth - 135, btnY);
+                btnForward.Location = new Point(bubbleX + bubbleWidth - 75, btnY);
             }
             else
             {
                 int bubbleX = AVATAR_SIZE + 10;
                 btnReply.Location = new Point(bubbleX + 40, btnY);
+                btnForward.Location = new Point(bubbleX + 100, btnY);
             }
         }
 
@@ -116,7 +140,7 @@ namespace ChatClient
                 var quoteRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, bubbleWidth - BUBBLE_PADDING * 2 - 10, 35);
                 DrawRoundedRectangle(g, quoteRect, 5, new SolidBrush(Color.FromArgb(180, 210, 240)));
                 g.DrawString($"Trả lời {_replyToUser}:", new Font("Segoe UI", 8F, FontStyle.Italic), new SolidBrush(Color.DarkGray), new PointF(quoteRect.X + 5, quoteRect.Y + 2));
-                string shortMsg = _replyToMessage?.Length > 30 ? _replyToMessage.Substring(0, 30) + "..." : _replyToMessage;
+                string shortMsg = (_replyToMessage?.Length > 30 ? _replyToMessage.Substring(0, 30) + "..." : _replyToMessage) ?? string.Empty;
                 g.DrawString(shortMsg ?? "", new Font("Segoe UI", 8F), new SolidBrush(Color.Gray), new PointF(quoteRect.X + 5, quoteRect.Y + 16));
                 textOffsetY += 40;
             }
@@ -155,7 +179,7 @@ namespace ChatClient
                 var quoteRect = new Rectangle(bubbleX + BUBBLE_PADDING, textOffsetY, bubbleWidth - BUBBLE_PADDING * 2 - 10, 35);
                 DrawRoundedRectangle(g, quoteRect, 5, new SolidBrush(Color.FromArgb(220, 220, 220)));
                 g.DrawString($"Trả lời {_replyToUser}:", new Font("Segoe UI", 8F, FontStyle.Italic), new SolidBrush(Color.Gray), new PointF(quoteRect.X + 5, quoteRect.Y + 2));
-                string shortMsg = _replyToMessage?.Length > 30 ? _replyToMessage.Substring(0, 30) + "..." : _replyToMessage;
+                string shortMsg = (_replyToMessage?.Length > 30 ? _replyToMessage.Substring(0, 30) + "..." : _replyToMessage) ?? string.Empty;
                 g.DrawString(shortMsg ?? "", new Font("Segoe UI", 8F), new SolidBrush(Color.DimGray), new PointF(quoteRect.X + 5, quoteRect.Y + 16));
                 textOffsetY += 40;
             }

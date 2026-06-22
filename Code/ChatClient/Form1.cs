@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Net.NetworkInformation;
 
 namespace ChatClient;
 
@@ -23,9 +24,9 @@ public partial class Form1 : Form
     // Cache avatar người dùng để tránh phải gọi lại nhiều lần
     private Dictionary<string, string?> _userAvatars = new();
 
-    private Panel pnlReply;
-    private Label lblReplyText;
-    private Button btnCancelReply;
+    private Panel pnlReply = null!;
+    private Label lblReplyText = null!;
+    private Button btnCancelReply = null!;
     private string? _replyTargetUser = null;
     private string? _replyTargetMessage = null;
 
@@ -40,6 +41,39 @@ public partial class Form1 : Form
     {
         // Hiển thị tên người dùng đã đăng nhập và thiết lập trạng thái ban đầu
         txtUsername.Text = _loggedInUser;
+        try
+        {
+            int portToCheck = 9988; // Đổi số này thành số Port mặc định của bạn
+            bool isServerRunningLocal = false;
+
+            // Lấy danh sách các Port TCP đang ở trạng thái Lắng nghe (Listen) trên máy này
+            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] tcpConnListeners = ipGlobalProperties.GetActiveTcpListeners();
+
+            foreach (IPEndPoint tcpi in tcpConnListeners)
+            {
+                if (tcpi.Port == portToCheck)
+                {
+                    isServerRunningLocal = true;
+                    break;
+                }
+            }
+
+            
+            if (isServerRunningLocal)
+            {
+                textBox2.Text = "127.0.0.1"; 
+            }
+            else
+            {
+                textBox2.Text = string.Empty;
+            }
+        }
+        catch (Exception)
+        {
+            textBox2.Text = string.Empty;
+        }
+
         SetConnectedState(false);
         dgvUsers.Columns.Clear();
         dgvUsers.Columns.Add("colID", "ID");
@@ -66,6 +100,7 @@ public partial class Form1 : Form
 
         InitializeReplyPanel();
         chatBubblePanel.OnReplyClicked += ChatBubblePanel_OnReplyClicked;
+        chatBubblePanel.OnForwardClicked += ChatBubblePanel_OnForwardClicked;
     }
 
     private void InitializeReplyPanel()
@@ -109,6 +144,29 @@ public partial class Form1 : Form
         lblReplyText.Text = $"Đang trả lời {senderName}: {shortMsg}";
         pnlReply.Visible = true;
         txtMessage.Focus();
+    }
+
+    private void ChatBubblePanel_OnForwardClicked(string senderName, string messageText)
+    {
+        if (!isConnected || clientSocket == null)
+        {
+            MessageBox.Show("Chưa kết nối tới server!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        string forwardText = $"[Chuyển tiếp từ {senderName}]: {messageText}";
+        var userAvatarBase64 = AccountManager.GetAvatar(_loggedInUser);
+
+        if (_privateTarget != null)
+        {
+            SendRaw($"PRIVATE:{_privateTarget}|{forwardText}\n");
+            AppendChatWithAvatar(_loggedInUser, $"[Gửi riêng tới {_privateTarget}] {forwardText}", true, userAvatarBase64);
+        }
+        else
+        {
+            SendRaw($"{forwardText}\n");
+            AppendChatWithAvatar(_loggedInUser, forwardText, true, userAvatarBase64);
+        }
     }
 
     private void CancelReply()
@@ -254,12 +312,43 @@ public partial class Form1 : Form
                         //duung them load tn
                         if (line.StartsWith("HISTORY:"))
                         {
-                            AppendChat(line.Substring(8), Color.Blue);
+                            string historyMsg = line.Substring(8).Trim();
+
+                            string historySender = ExtractSenderFromMessage(historyMsg);
+                            string historyText = ExtractMessageContent(historyMsg);
+
+                            AppendChatWithAvatar(
+                                historySender,
+                                historyText,
+                                historySender == _loggedInUser);
+
                             continue;
                         }
+
                         if (line.StartsWith("HISTORY_PRIVATE:"))
                         {
-                            AppendChat(line.Substring(16), Color.DarkViolet);
+                            string historyMsg = line.Substring(16).Trim();
+
+                            int endTime = historyMsg.IndexOf(']');
+                            string remain = historyMsg.Substring(endTime + 1).Trim();
+
+                            int arrow = remain.IndexOf("->");
+                            int colon = remain.IndexOf(':');
+
+                            string historySender = "";
+                            string historyText = "";
+
+                            if (arrow > 0 && colon > arrow)
+                            {
+                                historySender = remain.Substring(0, arrow).Trim();
+                                historyText = remain.Substring(colon + 1).Trim();
+                            }
+
+                            AppendChatWithAvatar(
+                                historySender,
+                                "[Riêng] " + historyText,
+                                historySender == _loggedInUser);
+
                             continue;
                         }
                         if (line.StartsWith("HISTORY_REPLY:"))
@@ -729,10 +818,11 @@ public partial class Form1 : Form
     {
         if (!isConnected)
         {
-            MessageBox.Show(
-                "Chưa kết nối Server");
+            MessageBox.Show("Chưa kết nối Server");
             return;
         }
+
+        chatBubblePanel.ClearMessages();
 
         if (_privateTarget == null)
         {
@@ -740,8 +830,7 @@ public partial class Form1 : Form
         }
         else
         {
-            SendRaw(
-                $"LOAD_PRIVATE:{_privateTarget}\n");
+            SendRaw($"LOAD_PRIVATE:{_privateTarget}\n");
         }
     }
 
@@ -847,667 +936,3 @@ public partial class Form1 : Form
 
 
 }
-
-//using System;
-//using System.Collections.Generic;
-//using System.Drawing;
-//using System.Net;
-//using System.Net.Sockets;
-//using System.Text;
-//using System.Threading;
-//using System.Windows.Forms;
-
-//namespace ChatClient;
-
-//public partial class Form1 : Form
-//{
-//    // KHAI BÁO CÁC BIẾN TOÀN CỤC (FIELDS)
-//    private Socket? clientSocket;
-//    private bool isConnected = false; 
-//    private readonly Dictionary<string, int> _userMap = new(); 
-//    private int _nextUserId = 1;
-//    private string? _privateTarget = null; 
-//    private readonly string _loggedInUser;
-//    private Dictionary<string, string?> _userAvatars = new(); // Cache lưu mã Base64 avatar của mọi người để tránh load lại nhiều lần
-
-//    // KHỞI TẠO FORM VÀ GIAO DIỆN
-//    public Form1(string loggedInUser)
-//    {
-//        InitializeComponent();
-//        _loggedInUser = loggedInUser;
-//    }
-
-//    private void Form1_Load(object? sender, EventArgs e)
-//    {
-//        txtUsername.Text = _loggedInUser;
-//        SetConnectedState(false); // Ban đầu chưa kết nối -> khóa các nút gửi tin
-
-//        //Thiết lập các cột và giao diện cho bảng danh sách User Onlinne
-//        dgvUsers.Columns.Clear();
-//        dgvUsers.Columns.Add("colID", "ID");
-//        dgvUsers.Columns.Add("colName", "Name");
-//        dgvUsers.Columns.Add("colChat", "Tin nhắn");
-
-//        //Định dạng màu sắc, viền, font
-//        dgvUsers.EnableHeadersVisualStyles = false;
-//        dgvUsers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(100, 100, 255);
-//        dgvUsers.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-//        dgvUsers.DefaultCellStyle.ForeColor = Color.Black;
-//        dgvUsers.DefaultCellStyle.BackColor = Color.White;
-//        dgvUsers.RowsDefaultCellStyle.ForeColor = Color.Black;
-//        dgvUsers.RowsDefaultCellStyle.BackColor = Color.White;
-//        dgvUsers.AlternatingRowsDefaultCellStyle.ForeColor = Color.Black;
-//        dgvUsers.AlternatingRowsDefaultCellStyle.BackColor = Color.WhiteSmoke;
-//        dgvUsers.RowTemplate.DefaultCellStyle.ForeColor = Color.Black;
-//        dgvUsers.RowTemplate.DefaultCellStyle.BackColor = Color.White;
-//        dgvUsers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 122, 204);
-//        dgvUsers.DefaultCellStyle.SelectionForeColor = Color.Black;
-
-//        //Gán sự kiện cho nút Kết nối và Ngắt kết nối
-//        conection.Click += conection_Click;
-//        unconection.Click += unconection_Click;
-
-//        //Tải ảnh đại diện của bản thân và gán sự kiện click để đổi ảnh
-//        LoadUserAvatar();
-//        pbUserAvatar.Click += pbUserAvatar_Click;
-//        pbUserAvatar.Cursor = Cursors.Hand;
-//    }
-//    //XỬ LÝ AVATAR (ẢNH ĐẠI DIỆN)
-
-//    //Tải và hiển thị ảnh đại diện của tài khoản đang đăng nhập
-//    private void LoadUserAvatar()
-//    {
-//        try
-//        {
-//            // Lấy chuỗi Base64 từ hệ thống quản lý tài khoản
-//            var avatarBase64 = AccountManager.GetAvatar(_loggedInUser);
-//            if (!string.IsNullOrEmpty(avatarBase64))
-//            {
-//                // Chuyển Base64 thành đối tượng Image của WinForms
-//                var avatarImage = AccountManager.ConvertBase64ToImage(avatarBase64);
-//                if (avatarImage != null)
-//                {
-//                    pbUserAvatar.Image = avatarImage;
-//                }
-//            }
-//        }
-//        catch (Exception ex)
-//        {
-//            // Nếu có lỗi (ví dụ file hỏng) thì chỉ ghi log ẩn, không làm crash app
-//            System.Diagnostics.Debug.WriteLine($"Error loading avatar: {ex.Message}");
-//        }
-//    }
-
-//    //click vào ảnh đại diện trên giao diện
-//    private void pbUserAvatar_Click(object? sender, EventArgs e)
-//    {
-//        ChangeUserAvatar();
-//    }
-
-//    //hộp thoại chọn file ảnh để đổi Avatar
-//    private void ChangeUserAvatar()
-//    {
-//        using var openFileDialog = new OpenFileDialog();
-//        openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif|All Files|*.*"; // Chỉ cho chọn file ảnh
-//        openFileDialog.Title = "Chọn ảnh Avatar mới";
-
-//        if (openFileDialog.ShowDialog(this) == DialogResult.OK)
-//        {
-//            try
-//            {
-//                // Lưu avatar mới qua AccountManager
-//                if (AccountManager.SetAvatar(_loggedInUser, openFileDialog.FileName, out var message))
-//                {
-//                    LoadUserAvatar(); // Tải lại ảnh lên màn hình
-//                    MessageBox.Show(message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-//                    AppendChat($"[Hệ thống] Avatar đã được cập nhật.", Color.Green);
-//                }
-//                else
-//                {
-//                    MessageBox.Show(message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-//                }
-//            }
-//            catch (Exception ex)
-//            {
-//                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-//            }
-//        }
-//    }
-
-//    //Mở Form Quản lý Avatar (nếu có form phụ)
-//    private void btnManageAvatar_Click(object? sender, EventArgs e)
-//    {
-//        using var avatarForm = new Frmavatar(_loggedInUser);
-//        if (avatarForm.ShowDialog(this) == DialogResult.OK)
-//        {
-//            LoadUserAvatar(); // Tải lại ảnh nếu có thay đổi từ form kia
-//        }
-//    }
-//    // KHỐI KẾT NỐI VÀ NGẮT KẾT NỐI MẠNG
-//    private void conection_Click(object? sender, EventArgs e)
-//    {
-//        if (isConnected) { MessageBox.Show("Client đã kết nối !"); return; }
-
-//        // Lấy IP và Port từ textbox
-//        string ip = textBox2.Text.Trim();
-//        string portStr = textBox3.Text.Trim();
-
-//        if (string.IsNullOrEmpty(ip) || string.IsNullOrEmpty(portStr))
-//        {
-//            MessageBox.Show("Vui lòng nhập IP và Port.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-//            return;
-//        }
-//        if (!int.TryParse(portStr, out int port))
-//        {
-//            MessageBox.Show("Port không hợp lệ!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-//            return;
-//        }
-//        try
-//        {
-//            // Khởi tạo Socket TCP/IPv4
-//            clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-//            clientSocket.Connect(new IPEndPoint(IPAddress.Parse(ip), port));
-//            isConnected = true;
-
-//            // Chuẩn bị thông tin đăng nhập (Username và Key bảo mật)
-//            string username = txtUsername.Text.Trim();
-//            if (string.IsNullOrEmpty(username)) username = "Client_An_Danh";
-//            string clientKey = txtkey.Text.Trim();
-
-//            // Gửi gói tin LOGIN lên Server
-//            string loginMsg = $"LOGIN: {username}|{clientKey}\n";
-//            SendRaw(loginMsg);
-
-//            // Khởi chạy 1 Luồng (Thread) chạy ngầm chuyên để nghe tin nhắn Server trả về
-//            Thread recvThread = new Thread(ReceiveLoop) { IsBackground = true };
-//            recvThread.Start();
-//        }
-//        catch (Exception ex)
-//        {
-//            MessageBox.Show($"Không thể kết nối: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-//            clientSocket?.Close();
-//            clientSocket = null;
-//        }
-//    }
-
-//    private void unconection_Click(object? sender, EventArgs e)
-//    {
-//        if (!isConnected) { MessageBox.Show("Client chưa kết nối!"); return; }
-//        Disconnect("Bạn đã ngắt kết nối.");
-//    }
-
-//    //Hàm dùng chung để dọn dẹp, ngắt mạng an toàn
-//    private void Disconnect(string reason)
-//    {
-//        if (!isConnected) return;
-//        isConnected = false;
-//        try { clientSocket?.Shutdown(SocketShutdown.Both); } catch { } // Dừng truyền/nhận
-//        clientSocket?.Close(); // Đóng hoàn toàn Socket
-//        clientSocket = null;
-
-//        // Cập nhật lại giao diện (Khóa nút, thông báo, xóa danh sách online)
-//        SafeInvoke(() =>
-//        {
-//            SetConnectedState(false);
-//            AppendChat($"[Hệ thống] {reason}");
-//            ClearUserList();
-//        });
-//    }
-//    // ĐỢI NHẬN DỮ LIỆU TỪ SERVER 
-
-//    private void ReceiveLoop()
-//    {
-//        byte[] buffer = new byte[4096]; // Bộ đệm 4KB
-//        while (isConnected && clientSocket != null)
-//        {
-//            try
-//            {
-//                int received = clientSocket.Receive(buffer);
-//                if (received == 0) { Disconnect("Server đã đóng kết nối."); break; }
-
-//                string msg = Encoding.UTF8.GetString(buffer, 0, received); // Dịch byte thành chuỗi UTF8
-
-//                // SafeInvoke bắt buộc dùng để chuyển dữ liệu từ Thread mạng về Thread Giao diện (UI)
-//                SafeInvoke(() =>
-//                {
-//                    // Tách tin nhắn theo dấu \n (xuống dòng) vì TCP có thể ghép nhiều gói tin
-//                    foreach (string line in msg.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-//                    {
-//                        // 1. Nhận Lịch sử tin nhắn
-//                        if (line.StartsWith("HISTORY:"))
-//                        {
-//                            AppendChat(line.Substring(8), Color.Blue);
-//                            continue;
-//                        }
-//                        if (line.StartsWith("HISTORY_PRIVATE:"))
-//                        {
-//                            AppendChat(line.Substring(16), Color.DarkViolet);
-//                            continue;
-//                        }
-//                        if (line.Trim() == "HISTORY_EMPTY")
-//                        {
-//                            AppendChat("[Hệ thống] Chưa có lịch sử tin nhắn.");
-//                            continue;
-//                        }
-
-//                        string trimmed = line.TrimEnd('\r');
-//                        if (string.IsNullOrEmpty(trimmed)) continue;
-
-//                        // 2. Kiểm tra lỗi sai Key bảo mật
-//                        if (trimmed.StartsWith("ERR_KEY:", StringComparison.OrdinalIgnoreCase))
-//                        {
-//                            string errMsg = trimmed.Substring(8).Trim();
-//                            isConnected = false;
-//                            MessageBox.Show(errMsg, "Lỗi Bảo Mật", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-//                            Disconnect("Kết nối bị từ chối do sai mã khóa (Key).");
-//                            return;
-//                        }
-
-//                        // 3. Đăng nhập thành công
-//                        if (trimmed.StartsWith("OK:", StringComparison.OrdinalIgnoreCase))
-//                        {
-//                            SetConnectedState(true);
-//                            AppendChat($"[Hệ thống] {trimmed.Substring(3).Trim()}");
-//                            continue;
-//                        }
-
-//                        // 4. Có người mới đăng nhập (Cập nhật bảng DataGridView)
-//                        if (trimmed.StartsWith("ONLINE:", StringComparison.OrdinalIgnoreCase))
-//                        {
-//                            string onlineName = trimmed.Substring(7).Trim();
-//                            if (!_userMap.ContainsKey(onlineName))
-//                            {
-//                                _userMap[onlineName] = _nextUserId++;
-//                                int rowIdx = dgvUsers.Rows.Add();
-//                                dgvUsers.Rows[rowIdx].Cells["colName"].Value = onlineName;
-//                                dgvUsers.Rows[rowIdx].Cells["colChat"].Value = "Gửi riêng";
-
-//                                // Đánh lại số thứ tự ID cho đẹp
-//                                for (int i = 0; i < dgvUsers.Rows.Count; i++)
-//                                {
-//                                    dgvUsers.Rows[i].Cells["colID"].Value = i + 1;
-//                                }
-//                            }
-//                            continue;
-//                        }
-
-//                        // 5. Có người thoát (Xóa khỏi bảng DataGridView)
-//                        if (trimmed.StartsWith("OFFLINE:", StringComparison.OrdinalIgnoreCase))
-//                        {
-//                            string offlineName = trimmed.Substring(8).Trim();
-//                            if (_userMap.ContainsKey(offlineName))
-//                            {
-//                                _userMap.Remove(offlineName);
-//                                foreach (DataGridViewRow row in dgvUsers.Rows)
-//                                {
-//                                    if (row.Cells["colName"].Value?.ToString() == offlineName)
-//                                    {
-//                                        dgvUsers.Rows.Remove(row);
-//                                        break;
-//                                    }
-//                                }
-//                                for (int k = 0; k < dgvUsers.Rows.Count; k++)
-//                                {
-//                                    dgvUsers.Rows[k].Cells["colID"].Value = k + 1;
-//                                }
-//                            }
-
-//                            // Nếu người vừa thoát là người mình đang nhắn riêng -> Thoát chế độ riêng
-//                            if (_privateTarget == offlineName)
-//                            {
-//                                _privateTarget = null;
-//                                lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
-//                                AppendChat($"[Hệ thống] {offlineName} đã offline. Đã chuyển về chế độ gửi chung.", Color.OrangeRed);
-//                            }
-//                            continue;
-//                        }
-
-//                        //TIN NHẮN THƯỜNG (Từ người khác gửi đến)
-
-//                        // Cắt chuỗi để lấy ra tên người gửi và nội dung
-//                        string senderName = ExtractSenderFromMessage(trimmed);
-//                        string messageText = ExtractMessageContent(trimmed);
-
-//                        // Bỏ qua nếu là tin nhắn do chính mình gửi (vì đã hiển thị lúc bấm nút Gửi rồi)
-//                        if (senderName == _loggedInUser)
-//                        {
-//                            continue;
-//                        }
-
-//                        // Lấy ảnh Avatar của người gửi
-//                        string? senderAvatarBase64 = null;
-//                        if (!string.IsNullOrEmpty(senderName) && senderName != "[Hệ thống]")
-//                        {
-//                            // Ưu tiên lấy từ cache (RAM) trước cho nhanh
-//                            if (_userAvatars.TryGetValue(senderName, out var cachedAvatar))
-//                            {
-//                                senderAvatarBase64 = cachedAvatar;
-//                            }
-//                            else
-//                            {
-//                                // Nếu chưa có trong cache thì gọi AccountManager để lấy
-//                                try
-//                                {
-//                                    senderAvatarBase64 = AccountManager.GetAvatar(senderName);
-//                                    if (!string.IsNullOrEmpty(senderAvatarBase64))
-//                                    {
-//                                        _userAvatars[senderName] = senderAvatarBase64; // Lưu lại vào cache
-//                                    }
-//                                }
-//                                catch { /* Bỏ qua nếu không lấy được avatar */ }
-//                            }
-//                        }
-
-//                        // Hiển thị bong bóng chat của người đó lên màn hình
-//                        AppendChatWithAvatar(senderName, messageText, false, senderAvatarBase64);
-//                        try { TryRegisterUserFromMessage(trimmed); } catch { }
-//                    }
-//                });
-//            }
-//            catch
-//            {
-//                if (isConnected) Disconnect("Mất kết nối với server.");
-//                break; // Thoát vòng lặp luồng nếu mất mạng
-//            }
-//        }
-//    }
-//    // GỬI TIN NHẮN 
-//    private void btnSend_Click(object? sender, EventArgs e)
-//    {
-//        string text = txtMessage.Text.Trim();
-//        if (string.IsNullOrEmpty(text)) { txtMessage.Focus(); return; } // Khung chat rỗng thì không làm gì
-
-//        if (!isConnected || clientSocket == null)
-//        {
-//            MessageBox.Show("Chưa kết nối tới server!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-//            return;
-//        }
-
-//        var userAvatarBase64 = AccountManager.GetAvatar(_loggedInUser);
-
-//        // NẾU ĐANG CHỌN NGƯỜI NHẮN RIÊNG
-//        if (_privateTarget != null)
-//        {
-//            // Đóng gói theo chuẩn Protocol: PRIVATE:Tên|Nội_Dung
-//            SendRaw($"PRIVATE:{_privateTarget}|{text}\n");
-//            // Tự vẽ bong bóng chat của mình ở bên phải (isOwnMessage = true)
-//            AppendChatWithAvatar(_loggedInUser, $"[Gửi riêng tới {_privateTarget}] {text}", true, userAvatarBase64);
-//        }
-//        // NẾU ĐANG NHẮN CHUNG (PUBLIC)
-//        else
-//        {
-//            SendRaw($"{text}\n");
-//            // Tự vẽ bong bóng chat của mình ở bên phải
-//            AppendChatWithAvatar(_loggedInUser, text, true, userAvatarBase64);
-//        }
-
-//        txtMessage.Clear(); // Xóa khung nhập liệu
-//        txtMessage.Focus();
-//    }
-
-//    /// Hàm nén chuỗi thành mảng byte và đẩy vào Socket
-//    private void SendRaw(string message)
-//    {
-//        if (clientSocket == null || !isConnected) return;
-//        try { clientSocket.Send(Encoding.UTF8.GetBytes(message)); }
-//        catch (Exception ex) { AppendChat($"[Lỗi gửi] {ex.Message}"); }
-//    }
-
-//    // KHỐI GIAO DIỆN & TÍNH NĂNG PHỤ
-//    //Sự kiện mở Menu chứa icon Emoji
-//    private void btnEmoji_Click(object? sender, EventArgs e)
-//    {
-//        ContextMenuStrip menu = new ContextMenuStrip();
-//        string[] emojis = { "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😋", "😎", "😍", "😘", "👍", "👎", "❤️", "🔥", "🎉", "🥺", "😭", "😤", "🙏", "💯" };
-//        foreach (string emoji in emojis)
-//        {
-//            ToolStripMenuItem item = new ToolStripMenuItem(emoji) { Font = new Font("Segoe UI Emoji", 14) };
-//            string cap = emoji;
-//            // Khi bấm vào Emoji -> Chèn vào textbox nhập liệu
-//            item.Click += (s, args) => { txtMessage.AppendText(cap); txtMessage.Focus(); };
-//            menu.Items.Add(item);
-//        }
-//        if (sender is Button btn) menu.Show(btn, new Point(0, btn.Height));
-//    }
-
-//    //Hỗ trợ bắt thông tin user nếu lỡ Server chưa gửi tín hiệu ONLINE
-//    private void TryRegisterUserFromMessage(string line)
-//    {
-//        if (line.Contains("[Hệ thống]") || line.Contains("[Gửi riêng]")) return;
-//        int bracketEnd = line.IndexOf(']');
-//        if (bracketEnd < 0) return;
-//        string afterBracket = line.Substring(bracketEnd + 1).TrimStart();
-//        int colonIdx = afterBracket.IndexOf(':');
-//        if (colonIdx <= 0) return;
-//        string senderName = afterBracket.Substring(0, colonIdx).Trim();
-//        if (string.IsNullOrEmpty(senderName) || senderName == txtUsername.Text.Trim()) return;
-//        if (!_userMap.ContainsKey(senderName))
-//        {
-//            _userMap[senderName] = _nextUserId++;
-//            int rowIdx = dgvUsers.Rows.Add();
-//            dgvUsers.Rows[rowIdx].Cells["colID"].Value = _userMap[senderName];
-//            dgvUsers.Rows[rowIdx].Cells["colName"].Value = senderName;
-//            dgvUsers.Rows[rowIdx].Cells["colChat"].Value = "Gửi riêng";
-//        }
-//    }
-
-//    //Chuyển đổi chế độ Nhắn Riêng khi click vào danh sách User
-//    private void dgvUsers_CellClick(object? sender, DataGridViewCellEventArgs e)
-//    {
-//        if (e.RowIndex < 0 || e.ColumnIndex < 0) return; // Click ra ngoài bảng
-
-//        // Nếu click đúng vào cột "Tin nhắn"
-//        if (dgvUsers.Columns[e.ColumnIndex].Name == "colChat")
-//        {
-//            var cell = dgvUsers.Rows[e.RowIndex].Cells["colName"];
-//            if (cell.Value == null) return;
-//            string targetName = cell.Value.ToString() ?? string.Empty;
-//            if (string.IsNullOrEmpty(targetName)) return;
-
-//            // Nếu click lại vào người đang nhắn riêng -> Hủy (Trở về nhắn chung)
-//            if (_privateTarget == targetName)
-//            {
-//                _privateTarget = null;
-//                dgvUsers.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
-//                lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
-//                AppendChat("[Hệ thống] Đã chuyển sang chế độ gửi chung.");
-//            }
-//            // Nếu click vào người mới -> Chuyển sang nhắn riêng người đó
-//            else
-//            {
-//                foreach (DataGridViewRow row in dgvUsers.Rows) row.DefaultCellStyle.BackColor = Color.White; // Reset màu toàn bảng
-//                _privateTarget = targetName;
-//                dgvUsers.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.LightYellow; // Tô vàng người đang nhắn
-//                lblLoggedIn.Text = $"Đang gửi riêng tới: {targetName}";
-//                AppendChat($"[Hệ thống] Đang gửi riêng tới [{targetName}]");
-//            }
-//        }
-//    }
-
-//    private void dgvUsers_CellContentClick(object? sender, DataGridViewCellEventArgs e) { }
-
-//    //Xóa trắng dữ liệu bảng và form chat
-//    private void ClearUserList()
-//    {
-//        dgvUsers.Rows.Clear();
-//        _userMap.Clear();
-//        _nextUserId = 1;
-//        _privateTarget = null;
-//        chatBubblePanel.ClearMessages();
-//        _userAvatars.Clear();
-//    }
-
-//    //Đăng xuất tài khoản, trở về màn hình Login
-//    private void btnLogout_Click(object? sender, EventArgs e)
-//    {
-//        DialogResult res = MessageBox.Show("Bạn có chắc muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-//        if (res != DialogResult.Yes) return;
-//        Disconnect("Đã đăng xuất.");
-//        Hide();
-//        var loginForm = new Frmlogin();
-//        if (loginForm.ShowDialog() == DialogResult.OK)
-//        {
-//            txtUsername.Text = loginForm.LoggedInUser ?? "Ẩn danh";
-//            Show();
-//            lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
-//        }
-//        else { Application.Exit(); }
-//    }
-
-//    //Hỗ trợ in thông báo hệ thống không có Avatar
-//    private void AppendChat(string text, Color? color = null)
-//    {
-//        if (chatBubblePanel.InvokeRequired) { SafeInvoke(() => AppendChat(text, color)); return; }
-//        chatBubblePanel.AddMessage("[Hệ thống]", text, DateTime.Now, false);
-//    }
-
-//    //tin nhắn lên màn hình có kèm Avatar
-//    private void AppendChatWithAvatar(string senderName, string messageText, bool isOwnMessage, string? avatarBase64 = null)
-//    {
-//        if (chatBubblePanel.InvokeRequired)
-//        {
-//            SafeInvoke(() => AppendChatWithAvatar(senderName, messageText, isOwnMessage, avatarBase64));
-//            return;
-//        }
-
-//        chatBubblePanel.AddMessage(senderName, messageText, DateTime.Now, isOwnMessage, avatarBase64);
-
-//        // Lưu lại avatar vào cache nếu có
-//        if (!string.IsNullOrEmpty(avatarBase64))
-//        {
-//            _userAvatars[senderName] = avatarBase64;
-//        }
-//    }
-
-//    // Nút chức năng ép quay về chế độ nhắn chung
-//    private void btnPublic_Click_1(object? sender, EventArgs e)
-//    {
-//        if (_privateTarget == null)
-//        {
-//            AppendChat("[Hệ thống] Bạn đang ở chế độ nhắn chung rồi.");
-//            return;
-//        }
-
-//        foreach (DataGridViewRow row in dgvUsers.Rows)
-//            row.DefaultCellStyle.BackColor = Color.White;
-
-//        _privateTarget = null;
-//        lblLoggedIn.Text = $"Đã đăng nhập: {txtUsername.Text.Trim()}";
-//        AppendChat("[Hệ thống] Đã chuyển sang chế độ nhắn chung.");
-//    }
-
-//    // Yêu cầu Server trả về lịch sử chat
-//    private void btnLoadHistory_Click(object sender, EventArgs e)
-//    {
-//        if (!isConnected)
-//        {
-//            MessageBox.Show("Chưa kết nối Server");
-//            return;
-//        }
-
-//        if (_privateTarget == null)
-//        {
-//            SendRaw("LOAD_PUBLIC\n");
-//        }
-//        else
-//        {
-//            SendRaw($"LOAD_PRIVATE:{_privateTarget}\n");
-//        }
-//    }
-
-//    //Khóa/Mở khóa các công cụ tùy theo việc đã kết nối hay chưa
-//    private void SetConnectedState(bool connected)
-//    {
-//        conection.Enabled = !connected;
-//        unconection.Enabled = connected;
-//        btnSend.Enabled = connected;
-//        btnEmoji.Enabled = connected;
-//        txtMessage.Enabled = connected;
-//        btnPublic.Enabled = connected;
-//        lblLoggedIn.Text = connected ? $"Đã đăng nhập: {txtUsername.Text.Trim()}" : "Chưa kết nối";
-//    }
-//    // KHỐI HÀM CÔNG CỤ (HELPERS & PARSING)
-//    //Giải quyết lỗi Cross-Thread (Luồng Mạng muốn đụng vào Luồng UI)
-//    private void SafeInvoke(Action action)
-//    {
-//        if (IsDisposed) return;
-//        if (InvokeRequired) Invoke(action); else action();
-//    }
-
-//    //Dùng string.IndexOf để bóc tách lấy TÊN NGƯỜI GỬI từ cấu trúc mạng
-//    private string ExtractSenderFromMessage(string message)
-//    {
-//        // Phân tích định dạng: "[HH:mm:ss] [SenderName]: message" hoặc "[HH:mm:ss] SenderName: message"
-//        try
-//        {
-//            int firstBracketEnd = message.IndexOf(']');
-//            if (firstBracketEnd < 0) return "Unknown";
-
-//            string afterTimestamp = message.Substring(firstBracketEnd + 1).TrimStart();
-
-//            if (afterTimestamp.StartsWith("["))
-//            {
-//                int closeBracket = afterTimestamp.IndexOf(']');
-//                if (closeBracket > 0)
-//                {
-//                    return afterTimestamp.Substring(1, closeBracket - 1).Trim();
-//                }
-//            }
-
-//            int colonIdx = afterTimestamp.IndexOf(':');
-//            if (colonIdx > 0)
-//            {
-//                return afterTimestamp.Substring(0, colonIdx).Trim();
-//            }
-
-//            return "Unknown";
-//        }
-//        catch
-//        {
-//            return "Unknown";
-//        }
-//    }
-
-//    //Dùng string.IndexOf để bóc tách lấy NỘI DUNG TIN NHẮN từ cấu trúc mạng
-//    private string ExtractMessageContent(string message)
-//    {
-//        try
-//        {
-//            int firstBracketEnd = message.IndexOf(']');
-//            if (firstBracketEnd < 0) return message;
-
-//            string afterTimestamp = message.Substring(firstBracketEnd + 1).TrimStart();
-
-//            if (afterTimestamp.StartsWith("["))
-//            {
-//                int closeBracket = afterTimestamp.IndexOf(']');
-//                if (closeBracket > 0)
-//                {
-//                    int colonIdx = afterTimestamp.IndexOf(':', closeBracket);
-//                    if (colonIdx >= 0)
-//                    {
-//                        return afterTimestamp.Substring(colonIdx + 1).TrimStart();
-//                    }
-//                }
-//            }
-
-//            int colonIdx2 = afterTimestamp.IndexOf(':');
-//            if (colonIdx2 > 0)
-//            {
-//                return afterTimestamp.Substring(colonIdx2 + 1).TrimStart();
-//            }
-
-//            return afterTimestamp;
-//        }
-//        catch
-//        {
-//            return message;
-//        }
-//    }
-
-//    // Các event trống (Được tạo ra bởi Designer, không chứa logic)
-//    private void txtkey_TextChanged(object? sender, EventArgs e) { }
-//    private void txtUsername_TextChanged(object? sender, EventArgs e) { }
-//    private void label1_Click(object? sender, EventArgs e) { }
-//    private void headerPanel_Paint(object sender, PaintEventArgs e) { }
-//}
