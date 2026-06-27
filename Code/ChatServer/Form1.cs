@@ -413,6 +413,34 @@ public partial class Form1 : Form
                         // --- NẾU ĐÚNG KEY, TIẾP TỤC XỬ LÝ ĐĂNG NHẬP NHƯ CŨ ---
                         if (!string.IsNullOrEmpty(username))
                         {
+                            // KIỂM TRA TRÙNG TÀI KHOẢN: không cho 2 client cùng username đăng nhập
+                            bool isDuplicate = false;
+                            lock (clientNames)
+                            {
+                                foreach (var kv in clientNames)
+                                {
+                                    if (kv.Key != clientSocket &&
+                                        string.Equals(kv.Value, username, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        isDuplicate = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (isDuplicate)
+                            {
+                                string dupErr = $"ERR_DUPLICATE: Tài khoản '{username}' đang được đăng nhập từ thiết bị khác!\n";
+                                try { clientSocket.Send(Encoding.UTF8.GetBytes(dupErr)); } catch { }
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] [Cảnh báo] Từ chối đăng nhập trùng tài khoản: {username}\r\n");
+                                });
+                                try { clientSocket.Shutdown(SocketShutdown.Both); clientSocket.Close(); } catch { }
+                                lock (listClientOnline) { listClientOnline.Remove(clientSocket); }
+                                return;
+                            }
+
                             clientName = username;
                             lock (clientNames) { clientNames[clientSocket] = username; }
 
