@@ -317,10 +317,12 @@ public partial class Form1 : Form
                             string historySender = ExtractSenderFromMessage(historyMsg);
                             string historyText = ExtractMessageContent(historyMsg);
 
+                            string? histAvatar = GetOrFetchAvatar(historySender);
                             AppendChatWithAvatar(
                                 historySender,
                                 historyText,
-                                historySender == _loggedInUser);
+                                historySender == _loggedInUser,
+                                histAvatar);
 
                             continue;
                         }
@@ -344,10 +346,12 @@ public partial class Form1 : Form
                                 historyText = remain.Substring(colon + 1).Trim();
                             }
 
+                            string? histPrivAvatar = GetOrFetchAvatar(historySender);
                             AppendChatWithAvatar(
                                 historySender,
                                 "[Riêng] " + historyText,
-                                historySender == _loggedInUser);
+                                historySender == _loggedInUser,
+                                histPrivAvatar);
 
                             continue;
                         }
@@ -364,7 +368,8 @@ public partial class Form1 : Form
                                 string rUser = parts[1].Trim();
                                 string rMsg = parts[2].Trim();
                                 string rContent = parts[3].Trim();
-                                AppendChatWithReply(sName, rContent, sName == _loggedInUser, rUser, rMsg);
+                                string? histReplyAvatar = GetOrFetchAvatar(sName);
+                                AppendChatWithReply(sName, rContent, sName == _loggedInUser, rUser, rMsg, histReplyAvatar);
                             }
                             continue;
                         }
@@ -380,7 +385,8 @@ public partial class Form1 : Form
                                 string rUser = parts[1].Trim();
                                 string rMsg = parts[2].Trim();
                                 string rContent = parts[3].Trim();
-                                AppendChatWithReply(sName, rContent, sName == _loggedInUser, rUser, rMsg);
+                                string? histPrivReplyAvatar = GetOrFetchAvatar(sName);
+                                AppendChatWithReply(sName, rContent, sName == _loggedInUser, rUser, rMsg, histPrivReplyAvatar);
                             }
                             continue;
                         }
@@ -399,6 +405,15 @@ public partial class Form1 : Form
                             isConnected = false;
                             MessageBox.Show(errMsg, "Lỗi Bảo Mật", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                             Disconnect("Kết nối bị từ chối do sai mã khóa (Key).");
+                            return;
+                        }
+
+                        if (trimmed.StartsWith("ERR_DUPLICATE:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string errMsg = trimmed.Substring(14).Trim();
+                            isConnected = false;
+                            MessageBox.Show(errMsg, "Tài khoản đã đăng nhập", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            Disconnect("Kết nối bị từ chối do tài khoản đang được dùng ở nơi khác.");
                             return;
                         }
 
@@ -689,8 +704,12 @@ public partial class Form1 : Form
         if (colonIdx <= 0) return;
         string senderName = afterBracket.Substring(0, colonIdx).Trim();
         if (string.IsNullOrEmpty(senderName) || senderName == txtUsername.Text.Trim()) return;
+        // Lọc: không thêm "Server" hoặc các tên hệ thống vào danh sách user
+        if (senderName.Equals("Server", StringComparison.OrdinalIgnoreCase)) return;
+        if (senderName.StartsWith("[")) return;
         if (!_userMap.ContainsKey(senderName))
         {
+            
             _userMap[senderName] = _nextUserId++;
             int rowIdx = dgvUsers.Rows.Add();
             dgvUsers.Rows[rowIdx].Cells["colID"].Value = _userMap[senderName];
@@ -794,6 +813,21 @@ public partial class Form1 : Form
         {
             _userAvatars[senderName] = avatarBase64;
         }
+    }
+
+    /// <summary>Lấy avatar từ cache _userAvatars, nếu không có thì tra AccountManager. Trả về null nếu không có.</summary>
+    private string? GetOrFetchAvatar(string username)
+    {
+        if (string.IsNullOrEmpty(username)) return null;
+        if (_userAvatars.TryGetValue(username, out var cached)) return cached;
+        try
+        {
+            var avatar = AccountManager.GetAvatar(username);
+            if (!string.IsNullOrEmpty(avatar))
+                _userAvatars[username] = avatar;
+            return avatar;
+        }
+        catch { return null; }
     }
 
     private void btnPublic_Click_1(object? sender, EventArgs e)
