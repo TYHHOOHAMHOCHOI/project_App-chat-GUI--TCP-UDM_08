@@ -627,7 +627,7 @@ public partial class Form1 : Form
 
     private void btnSend_Click(object? sender, EventArgs e)
     {
-        string text = txtMessage.Text.Trim();
+        string text = txtMessage.Text.Trim().Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
         if (string.IsNullOrEmpty(text)) { txtMessage.Focus(); return; }
         if (!isConnected || clientSocket == null)
         {
@@ -967,6 +967,24 @@ public partial class Form1 : Form
     private void txtUsername_TextChanged(object? sender, EventArgs e) { }
     private void label1_Click(object? sender, EventArgs e) { }
     private void headerPanel_Paint(object sender, PaintEventArgs e) { }
+}
 
+public class PasteTextBox : TextBox
+{
+    private const int WM_PASTE = 0x0302;
 
+    protected override void WndProc(ref Message m)
+    {
+        if (m.Msg == WM_PASTE)
+        {
+            if (Clipboard.ContainsText())
+            {
+                string text = Clipboard.GetText();
+                string cleanText = text.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
+                this.SelectedText = cleanText;
+            }
+            return;
+        }
+        base.WndProc(ref m);
+    }
 }

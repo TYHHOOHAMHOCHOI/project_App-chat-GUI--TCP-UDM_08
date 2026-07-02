@@ -1,4 +1,4 @@
-﻿namespace ChatClient;
+namespace ChatClient;
 
 partial class Form1
 {
@@ -22,7 +22,7 @@ partial class Form1
         colName = new DataGridViewTextBoxColumn();
         colChat = new DataGridViewTextBoxColumn();
         chatBubblePanel = new ChatBubblePanel();
-        txtMessage = new TextBox();
+        txtMessage = new PasteTextBox();
         btnSend = new Button();
         btnEmoji = new Button();
         headerPanel = new Panel();
@@ -398,7 +398,7 @@ partial class Form1
 
     private System.Windows.Forms.DataGridView dgvUsers;
     private ChatBubblePanel chatBubblePanel;
-    private System.Windows.Forms.TextBox txtMessage;
+    private PasteTextBox txtMessage;
     private System.Windows.Forms.Button btnSend;
     private System.Windows.Forms.Button btnEmoji;
     private System.Windows.Forms.Panel headerPanel;
